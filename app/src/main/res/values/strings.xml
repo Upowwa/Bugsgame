@@ -1,3 +1,16 @@
 <resources>
     <string name="app_name">BugsGame</string>
+
+    <string name="registration_title">Регистрация игрока</string>
+    <string name="full_name">ФИО</string>
+    <string name="gender">Пол</string>
+    <string name="male">Мужской</string>
+    <string name="female">Женский</string>
+    <string name="course">Курс</string>
+    <string name="difficulty">Уровень сложности: %1$d</string>
+    <string name="difficulty_initial">Уровень сложности: 1</string>
+    <string name="birth_date">Дата рождения</string>
+    <string name="birth_year">Год рождения</string>
+    <string name="register">Зарегистрировать</string>
+    <string name="zodiac_sign">Знак зодиака</string>
 </resources>
