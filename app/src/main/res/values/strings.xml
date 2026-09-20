@@ -13,4 +13,5 @@
     <string name="birth_year">Год рождения</string>
     <string name="register">Зарегистрировать</string>
     <string name="zodiac_sign">Знак зодиака</string>
+    <string name="player_result">Данные игрока:\n\nФИО: %1$s\nПол: %2$s\nКурс: %3$s\nУровень сложности: %4$d\nДата рождения: %5$s\nЗнак зодиака: %6$s</string>
 </resources>

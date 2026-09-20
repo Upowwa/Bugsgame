@@ -63,44 +63,22 @@ class MainActivity : ComponentActivity() {
             "3 курс",
             "4 курс"
         )
-
-        val adapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_item,
-            courses
-        )
-
-        adapter.setDropDownViewResource(
-            android.R.layout.simple_spinner_dropdown_item
-        )
-
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, courses)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerCourse.adapter = adapter
     }
 
     private fun setupBirthYearSpinner() {
         val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-
         val years = (1950..currentYear).toList().reversed()
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, years)
 
-        val adapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_item,
-            years
-        )
-
-        adapter.setDropDownViewResource(
-            android.R.layout.simple_spinner_dropdown_item
-        )
-
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerBirthYear.adapter = adapter
-
-        spinnerBirthYear.setSelection(
-            years.indexOf(selectedBirthDate.get(Calendar.YEAR))
-        )
+        spinnerBirthYear.setSelection(years.indexOf(selectedBirthDate.get(Calendar.YEAR)))
 
         spinnerBirthYear.onItemSelectedListener =
             object : android.widget.AdapterView.OnItemSelectedListener {
-
                 override fun onItemSelected(
                     parent: android.widget.AdapterView<*>?,
                     view: android.view.View?,
@@ -108,27 +86,19 @@ class MainActivity : ComponentActivity() {
                     id: Long
                 ) {
                     val selectedYear = years[position]
-
                     selectedBirthDate.set(
                         Calendar.YEAR,
                         selectedYear
                     )
-
-                    calendarViewBirthDate.date =
-                        selectedBirthDate.timeInMillis
+                    calendarViewBirthDate.date = selectedBirthDate.timeInMillis
                 }
-
-                override fun onNothingSelected(
-                    parent: android.widget.AdapterView<*>?
-                ) {
-                }
+                override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
             }
     }
 
     private fun setupDifficulty() {
         seekBarDifficulty.setOnSeekBarChangeListener(
             object : SeekBar.OnSeekBarChangeListener {
-
                 override fun onProgressChanged(
                     seekBar: SeekBar?,
                     progress: Int,
@@ -137,25 +107,15 @@ class MainActivity : ComponentActivity() {
                     val difficulty = progress + 1
                     textViewDifficulty.text = getString(R.string.difficulty, difficulty)
                 }
-
-                override fun onStartTrackingTouch(seekBar: SeekBar?) {
-                }
-
-                override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                }
+                override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+                override fun onStopTrackingTouch(seekBar: SeekBar?) {}
             }
         )
     }
 
     private fun setupCalendar() {
         calendarViewBirthDate.setOnDateChangeListener {
-                _, year, month, dayOfMonth ->
-
-            selectedBirthDate.set(
-                year,
-                month,
-                dayOfMonth
-            )
+            _, year, month, dayOfMonth -> selectedBirthDate.set(year, month, dayOfMonth)
         }
     }
 
@@ -180,16 +140,10 @@ class MainActivity : ComponentActivity() {
         }
 
         val course = spinnerCourse.selectedItem.toString()
-
         val difficulty = seekBarDifficulty.progress + 1
+        val birthDate = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(selectedBirthDate.time)
 
-        val birthDate = SimpleDateFormat(
-            "dd.MM.yyyy",
-            Locale.getDefault()
-        ).format(selectedBirthDate.time)
-
-        val zodiac = getZodiacSign(
-            selectedBirthDate.get(Calendar.DAY_OF_MONTH),
+        val zodiac = getZodiacSign(selectedBirthDate.get(Calendar.DAY_OF_MONTH),
             selectedBirthDate.get(Calendar.MONTH) + 1
         )
 
@@ -209,55 +163,32 @@ class MainActivity : ComponentActivity() {
     private fun showPlayerData() {
         val currentPlayer = player ?: return
 
-        textViewResult.text = """
-            Данные игрока:
-            
-            ФИО: ${currentPlayer.fullName}
-            Пол: ${currentPlayer.gender}
-            Курс: ${currentPlayer.course}
-            Уровень сложности: ${currentPlayer.difficulty}
-            Дата рождения: ${currentPlayer.birthDate}
-            Знак зодиака: ${currentPlayer.zodiac}
-        """.trimIndent()
+        textViewResult.text = getString(
+            R.string.player_result,
+            currentPlayer.fullName,
+            currentPlayer.gender,
+            currentPlayer.course,
+            currentPlayer.difficulty,
+            currentPlayer.birthDate,
+            currentPlayer.zodiac
+        )
     }
 
     private fun getZodiacSign(day: Int, month: Int): String {
-        return when {
-            (month == 12 && day >= 22) || (month == 1 && day <= 19) ->
-                "Козерог"
-
-            (month == 1 && day >= 20) || (month == 2 && day <= 18) ->
-                "Водолей"
-
-            (month == 2 && day >= 19) || (month == 3 && day <= 20) ->
-                "Рыбы"
-
-            (month == 3 && day >= 21) || (month == 4 && day <= 19) ->
-                "Овен"
-
-            (month == 4 && day >= 20) || (month == 5 && day <= 20) ->
-                "Телец"
-
-            (month == 5 && day >= 21) || (month == 6 && day <= 20) ->
-                "Близнецы"
-
-            (month == 6 && day >= 21) || (month == 7 && day <= 22) ->
-                "Рак"
-
-            (month == 7 && day >= 23) || (month == 8 && day <= 22) ->
-                "Лев"
-
-            (month == 8 && day >= 23) || (month == 9 && day <= 22) ->
-                "Дева"
-
-            (month == 9 && day >= 23) || (month == 10 && day <= 22) ->
-                "Весы"
-
-            (month == 10 && day >= 23) || (month == 11 && day <= 21) ->
-                "Скорпион"
-
-            else ->
-                "Стрелец"
+        return when (month) {
+            1 -> if (day <= 19) "Козерог" else "Водолей"
+            2 -> if (day <= 18) "Водолей" else "Рыбы"
+            3 -> if (day <= 20) "Рыбы" else "Овен"
+            4 -> if (day <= 19) "Овен" else "Телец"
+            5 -> if (day <= 20) "Телец" else "Близнецы"
+            6 -> if (day <= 20) "Близнецы" else "Рак"
+            7 -> if (day <= 22) "Рак" else "Лев"
+            8 -> if (day <= 22) "Лев" else "Дева"
+            9 -> if (day <= 22) "Дева" else "Весы"
+            10 -> if (day <= 22) "Весы" else "Скорпион"
+            11 -> if (day <= 21) "Скорпион" else "Стрелец"
+            12 -> if (day <= 21) "Стрелец" else "Козерог"
+            else -> "Козерог"
         }
     }
 
