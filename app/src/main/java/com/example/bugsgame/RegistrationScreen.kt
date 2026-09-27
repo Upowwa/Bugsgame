@@ -52,13 +52,13 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import com.example.bugsgame.ui.theme.Green
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegistrationScreen() {
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
-    val brown = Color(0xFF0f5715)
 
     var fullName by remember { mutableStateOf("") }
     var gender by remember { mutableStateOf("") }
@@ -79,12 +79,12 @@ fun RegistrationScreen() {
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(20.dp))
         Text(
             text = stringResource(R.string.registration_title),
             fontSize = 30.sp,
             fontWeight = FontWeight.Bold,
-            color = brown
+            color = Green
         )
 
         Spacer(modifier = Modifier.height(30.dp))
@@ -96,7 +96,7 @@ fun RegistrationScreen() {
             label = { Text(stringResource(R.string.full_name)) },
             textStyle = TextStyle(
                 fontSize = 17.sp,
-                color = brown
+                color = Green
             ),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -115,7 +115,7 @@ fun RegistrationScreen() {
             text = stringResource(R.string.gender),
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
-            color = brown
+            color = Green
         )
 
         Row(
@@ -137,7 +137,7 @@ fun RegistrationScreen() {
                 Text(
                     text = stringResource(R.string.male),
                     fontSize = 17.sp,
-                    color = brown
+                    color = Green
                 )
             }
 
@@ -157,7 +157,7 @@ fun RegistrationScreen() {
                 Text(
                     text = stringResource(R.string.female),
                     fontSize = 17.sp,
-                    color = brown
+                    color = Green
                 )
             }
         }
@@ -168,7 +168,7 @@ fun RegistrationScreen() {
             text = stringResource(R.string.course),
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
-            color = brown
+            color = Green
         )
 
         Spacer(modifier = Modifier.height(15.dp))
@@ -196,7 +196,7 @@ fun RegistrationScreen() {
                 },
                 textStyle = TextStyle(
                     fontSize = 17.sp,
-                    color = brown
+                    color = Green
                 ),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -218,7 +218,7 @@ fun RegistrationScreen() {
                             Text(
                                 text = selectedCourse,
                                 fontSize = 17.sp,
-                                color = brown
+                                color = Green
                             ) },
                         onClick = {
                             course = selectedCourse
@@ -235,7 +235,7 @@ fun RegistrationScreen() {
             text = stringResource(R.string.difficulty, difficulty),
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
-            color = brown
+            color = Green
         )
         Spacer(modifier = Modifier.height(10.dp))
         Slider(
@@ -254,7 +254,7 @@ fun RegistrationScreen() {
             text = stringResource(R.string.birth_date),
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
-            color = brown
+            color = Green
         )
 
         Spacer(modifier = Modifier.height(7.dp))
@@ -280,7 +280,7 @@ fun RegistrationScreen() {
             },
             colors = ButtonDefaults.outlinedButtonColors(
                 containerColor = Color.White,
-                contentColor = brown
+                contentColor = Green
             ),
             border = BorderStroke(
                 1.5.dp,
@@ -351,7 +351,7 @@ fun RegistrationScreen() {
                         currentPlayer.zodiac
                     ),
                     fontSize = 20.sp,
-                    color = brown
+                    color = Green
                 )
                 Spacer(modifier = Modifier.height(20.dp))
 

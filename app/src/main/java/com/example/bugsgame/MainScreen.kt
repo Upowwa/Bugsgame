@@ -24,11 +24,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.bugsgame.ui.theme.Green
 
 @Composable
 fun MainScreen() {
     var selectedTab by remember { mutableIntStateOf(0) }
-    val brown = Color(0xFF0f5715)
 
     val tabs = listOf(
         "Регистрация",
@@ -63,7 +63,7 @@ fun MainScreen() {
                         color = if (selectedTab == index) {
                             MaterialTheme.colorScheme.primary
                         } else {
-                            brown
+                            Green
                         }
                     )
 
@@ -88,8 +88,8 @@ fun MainScreen() {
         when (selectedTab) {
             0 -> RegistrationScreen()
             1 -> RulesScreen()
-            2 -> Text("Авторы")
-            3 -> Text("Настройки")
+            2 -> AuthorsScreen()
+            3 -> SettingsScreen()
         }
     }
 }

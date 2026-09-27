@@ -14,4 +14,9 @@
     <string name="register">Зарегистрировать</string>
     <string name="zodiac_sign">Знак зодиака</string>
     <string name="player_result">Данные игрока:\n\nФИО: %1$s\nПол: %2$s\nКурс: %3$s\nУровень сложности: %4$d\nДата рождения: %5$s\nЗнак зодиака: %6$s</string>
+
+    <string name="game_speed">Скорость игры</string>
+    <string name="max_num_beetles">Максимальное количество тараканов</string>
+    <string name="bonus_interval">Интервал появления бонусов</string>
+    <string name="round_duration">Длительность раунда</string>
 </resources>
