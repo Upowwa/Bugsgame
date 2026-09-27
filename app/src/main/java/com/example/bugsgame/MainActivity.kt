@@ -16,7 +16,7 @@ class MainActivity : ComponentActivity() {
         )
 
         composeView.setContent {
-            RegistrationScreen()
+            MainScreen()
         }
     }
 }
