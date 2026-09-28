@@ -4,10 +4,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.background
@@ -25,10 +21,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.bugsgame.ui.theme.Green
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
 
 @Composable
 fun MainScreen() {
-    var selectedTab by remember { mutableIntStateOf(0) }
+    val pagerState = rememberPagerState(pageCount = { 4 })
+    val coroutineScope = rememberCoroutineScope()
 
     val tabs = listOf(
         "Регистрация",
@@ -47,7 +48,9 @@ fun MainScreen() {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .clickable {
-                            selectedTab = index
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(index)
+                            }
                         }
                         .padding(horizontal = 2.dp)
                 ) {
@@ -55,12 +58,12 @@ fun MainScreen() {
                     Text(
                         text = title,
                         fontSize = 15.sp,
-                        fontWeight = if (selectedTab == index) {
+                        fontWeight = if (pagerState.currentPage == index) {
                             FontWeight.Bold
                         } else {
                             FontWeight.Normal
                         },
-                        color = if (selectedTab == index) {
+                        color = if (pagerState.currentPage == index) {
                             MaterialTheme.colorScheme.primary
                         } else {
                             Green
@@ -74,7 +77,7 @@ fun MainScreen() {
                             .width(60.dp)
                             .height(2.dp)
                             .background(
-                                if (selectedTab == index) {
+                                if (pagerState.currentPage == index) {
                                     MaterialTheme.colorScheme.primary
                                 } else {
                                     Color.Transparent
@@ -84,12 +87,17 @@ fun MainScreen() {
                 }
             }
         }
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxWidth()
+        ) { page ->
 
-        when (selectedTab) {
-            0 -> RegistrationScreen()
-            1 -> RulesScreen()
-            2 -> AuthorsScreen()
-            3 -> SettingsScreen()
+            when (page) {
+                0 -> RegistrationScreen()
+                1 -> RulesScreen()
+                2 -> AuthorsScreen()
+                3 -> SettingsScreen()
+            }
         }
     }
 }
