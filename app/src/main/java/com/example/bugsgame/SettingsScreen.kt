@@ -19,13 +19,23 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bugsgame.ui.theme.Green
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun SettingsScreen() {
-    var gameSpeed by rememberSaveable  { mutableFloatStateOf(5f) }
-    var maxBeetles by rememberSaveable  { mutableFloatStateOf(10f) }
-    var bonusInterval by rememberSaveable  { mutableFloatStateOf(40f) }
-    var roundDuration by rememberSaveable  { mutableFloatStateOf(3f) }
+    val context = LocalContext.current
+    var gameSpeed by rememberSaveable {
+        mutableFloatStateOf(GameSettings.getGameSpeed(context))
+    }
+    var maxBeetles by rememberSaveable {
+        mutableFloatStateOf(GameSettings.getMaxBeetles(context))
+    }
+    var bonusInterval by rememberSaveable {
+        mutableFloatStateOf(GameSettings.getBonusInterval(context))
+    }
+    var roundDuration by rememberSaveable {
+        mutableFloatStateOf(GameSettings.getRoundDuration(context))
+    }
 
     Column(
         modifier = Modifier
@@ -43,7 +53,10 @@ fun SettingsScreen() {
         Spacer(modifier = Modifier.height(10.dp))
         Slider(
             value = gameSpeed,
-            onValueChange = { gameSpeed = it },
+            onValueChange = {
+                gameSpeed = it
+                GameSettings.saveGameSpeed(context, it)
+            },
             valueRange = 1f..5f,
             steps = 3,
             modifier = Modifier.fillMaxWidth()
@@ -59,9 +72,12 @@ fun SettingsScreen() {
         Spacer(modifier = Modifier.height(10.dp))
         Slider(
             value = maxBeetles,
-            onValueChange = { maxBeetles = it },
-            valueRange = 1f..20f,
-            steps = 18,
+            onValueChange = {
+                maxBeetles = it
+                GameSettings.saveMaxBeetles(context, it)
+            },
+            valueRange = 10f..30f,
+            steps = 19,
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -75,7 +91,10 @@ fun SettingsScreen() {
         Spacer(modifier = Modifier.height(10.dp))
         Slider(
             value = bonusInterval,
-            onValueChange = { bonusInterval = it },
+            onValueChange = {
+                bonusInterval = it
+                GameSettings.saveBonusInterval(context, it)
+            },
             valueRange = 20f..40f,
             steps = 18,
             modifier = Modifier.fillMaxWidth()
@@ -90,7 +109,10 @@ fun SettingsScreen() {
         Spacer(modifier = Modifier.height(10.dp))
         Slider(
             value = roundDuration,
-            onValueChange = { roundDuration = it },
+            onValueChange = {
+                roundDuration = it
+                GameSettings.saveRoundDuration(context, it)
+            },
             valueRange = 1f..5f,
             steps = 3,
             modifier = Modifier.fillMaxWidth()
