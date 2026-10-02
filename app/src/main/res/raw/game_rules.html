@@ -2,13 +2,111 @@
 <html>
 <head>
     <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
     <title>Правила игры</title>
+
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            position: relative;
+            color: #636363;
+            font-family: sans-serif;
+            overflow: hidden;
+        }
+
+        .background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+            box-sizing: border-box;
+            padding: 25px;
+        }
+        h2 {
+            text-align: center;
+            margin-top: 10px;
+            margin-bottom: 30px;
+            color: #636363;
+        }
+
+        p {
+            font-size: 18px;
+            line-height: 1.5;
+            margin: 0 0 18px 0;
+        }
+
+        .rule {
+            margin-bottom: 12px;
+        }
+    </style>
 </head>
+
 <body>
 
-<h2>Правила игры</h2>
 
-<p>ertyuijjnbhvgcf</p>
+<div class="content">
+
+    <h2>ПРАВИЛА ИГРЫ</h2>
+
+    <p>
+        Цель игры — набрать как можно больше очков,
+        уничтожая насекомых.
+    </p>
+
+    <p class="rule">
+        • Нажмите на насекомое, чтобы уничтожить его
+        и получить очки.
+    </p>
+
+    <p class="rule">
+        • Если нажать на свободную область игрового поля,
+        засчитывается промах и снимается 1 очко.
+    </p>
+
+    <p class="rule">
+        • Красный жук — 1 очко.<br>
+        • Черный жук — 2 очка.<br>
+        • Желтый жук — 5 очков.
+    </p>
+
+    <p class="rule">
+        • Игра заканчивается после завершения таймера.
+    </p>
+
+    <p class="rule">
+        • После окончания раунда отображаются:
+        количество очков, попаданий, промахов
+        и точность.
+    </p>
+
+    <p class="rule">
+        • Для новой игры нажмите кнопку
+        «Играть снова».
+    </p>
+
+    <p>
+        Количество насекомых, скорость их движения
+        и длительность раунда можно изменить
+        в разделе «Настройки».
+    </p>
+
+</div>
 
 </body>
 </html>
