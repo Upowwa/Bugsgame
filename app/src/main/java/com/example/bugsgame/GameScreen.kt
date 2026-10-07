@@ -41,8 +41,7 @@ import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.offset
+
 @Composable
 fun GameScreen() {
     val context = LocalContext.current
