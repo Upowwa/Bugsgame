@@ -16,11 +16,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.res.painterResource
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    player: Player,
+    onChangePlayer: () -> Unit
+) {
     val pagerState = rememberPagerState(pageCount = { 5 })
     val coroutineScope = rememberCoroutineScope()
+    var isGameActive by remember { mutableStateOf(true) }
+    val isGamePageLocked = pagerState.currentPage == 2 && isGameActive
 
     val tabs = listOf(
         Pair(R.drawable.registration, R.drawable.registration_selected),
@@ -31,11 +40,8 @@ fun MainScreen() {
     )
 
     Column {
-        TabRow(
-            selectedTabIndex = pagerState.currentPage
-        ) {
+        TabRow(selectedTabIndex = pagerState.currentPage) {
             tabs.forEachIndexed { index, icons ->
-
                 val icon = if (pagerState.currentPage == index) {
                     icons.second
                 } else {
@@ -45,8 +51,10 @@ fun MainScreen() {
                 Tab(
                     selected = pagerState.currentPage == index,
                     onClick = {
-                        coroutineScope.launch {
-                            pagerState.animateScrollToPage(index)
+                        if (!isGamePageLocked) {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(index)
+                            }
                         }
                     },
                     icon = {
@@ -62,15 +70,25 @@ fun MainScreen() {
                 )
             }
         }
+
         HorizontalPager(
             state = pagerState,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            userScrollEnabled = !isGamePageLocked
         ) { page ->
-
             when (page) {
-                0 -> RegistrationScreen()
+                0 -> PlayerInfoScreen(
+                    player = player,
+                    onChangePlayer = onChangePlayer
+                )
                 1 -> RulesScreen()
-                2 -> GameScreen()
+                2 -> GameScreen(
+                    playerId = player.id,
+                    difficulty = player.difficulty,
+                    onGameActiveChange = { active ->
+                        isGameActive = active
+                    }
+                )
                 3 -> AuthorsScreen()
                 4 -> SettingsScreen()
             }

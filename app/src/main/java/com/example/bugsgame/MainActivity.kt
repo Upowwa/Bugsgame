@@ -8,15 +8,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContentView(R.layout.activity_main)
 
-        val composeView = findViewById<ComposeView>(
-            R.id.composeView
-        )
-
+        val composeView = findViewById<ComposeView>(R.id.composeView)
         composeView.setContent {
-            MainScreen()
+            AppNavigation()
         }
     }
 }

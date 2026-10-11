@@ -37,24 +37,19 @@ fun AuthorsScreen() {
         Pair("Гетинг Дарья", R.drawable.daria)
     )
 
-    var selectedPhoto by remember {
-        mutableStateOf<Int?>(null)
-    }
+    var selectedPhoto by remember { mutableStateOf<Int?>(null) }
 
     AndroidView(
         modifier = Modifier.fillMaxSize(),
         factory = { context ->
             ListView(context).apply {
-
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT
                 )
-
                 setPadding(0, 0, 0, 0)
 
                 adapter = object : BaseAdapter() {
-
                     override fun getCount(): Int {
                         return authors.size
                     }
@@ -72,14 +67,11 @@ fun AuthorsScreen() {
                         convertView: View?,
                         parent: ViewGroup
                     ): View {
-
                         val layout = LinearLayout(context).apply {
-
                             layoutParams = AbsListView.LayoutParams(
                                 ViewGroup.LayoutParams.MATCH_PARENT,
                                 ViewGroup.LayoutParams.WRAP_CONTENT
                             )
-
                             orientation = LinearLayout.VERTICAL
                             gravity = Gravity.CENTER_HORIZONTAL
 
@@ -97,7 +89,6 @@ fun AuthorsScreen() {
                         }
 
                         val imageContainer = FrameLayout(context).apply {
-
                             layoutParams = LinearLayout.LayoutParams(
                                 dp(250),
                                 dp(250)
@@ -192,14 +183,11 @@ private fun ImageView(
         modifier = Modifier.fillMaxSize(),
         factory = { context ->
             ImageView(context).apply {
-
                 setImageResource(photo)
                 scaleType = ImageView.ScaleType.FIT_CENTER
                 setBackgroundColor(Color.TRANSPARENT)
 
-                setOnClickListener {
-                    onClose()
-                }
+                setOnClickListener { onClose() }
             }
         }
     )

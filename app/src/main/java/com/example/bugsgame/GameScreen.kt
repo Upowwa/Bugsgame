@@ -2,6 +2,7 @@ package com.example.bugsgame
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -43,8 +44,13 @@ import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
-fun GameScreen() {
+fun GameScreen(
+    playerId: Int,
+    difficulty: Int,
+    onGameActiveChange: (Boolean) -> Unit
+) {
     val context = LocalContext.current
+    val database = remember { AppDatabase.getDatabase(context) }
     val density = LocalDensity.current
 
     val gameSpeed = GameSettings.getGameSpeed(context)
@@ -61,6 +67,28 @@ fun GameScreen() {
 
     var remainingSeconds by remember { mutableIntStateOf(roundDuration * 60) }
     var gameActive by remember { mutableStateOf(true) }
+
+    LaunchedEffect(gameActive) { onGameActiveChange(gameActive) }
+    LaunchedEffect(gameActive) {
+        if (!gameActive) {
+            val accuracy = if (hits + misses > 0) {
+                hits.toFloat() / (hits + misses) * 100
+            } else {
+                0f
+            }
+
+            database.gameResultDao().insert(
+                GameResultEntity(
+                    playerId = playerId,
+                    score = score,
+                    hits = hits,
+                    misses = misses,
+                    accuracy = accuracy,
+                    difficulty = difficulty
+                )
+            )
+        }
+    }
     val bugs = remember { mutableStateListOf<Bug>() }
 
     fun createBugs() {
@@ -106,7 +134,6 @@ fun GameScreen() {
     }
 
     LaunchedEffect(Unit) { createBugs() }
-
     LaunchedEffect(gameActive) {
         if (gameActive) {
             while (remainingSeconds > 0) {
@@ -184,6 +211,8 @@ fun GameScreen() {
                     .weight(1f)
                     .clickable(
                         enabled = gameActive,
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
                         onClick = {
                             misses++
                             score--
@@ -196,17 +225,13 @@ fun GameScreen() {
                 fun logicalToScreenX(
                     x: Float
                 ): Float {
-                    return with(density) {
-                        x / logicalFieldSize * screenWidth.toPx()
-                    }
+                    return with(density) { x / logicalFieldSize * screenWidth.toPx() }
                 }
 
                 fun logicalToScreenY(
                     y: Float
                 ): Float {
-                    return with(density) {
-                        y / logicalFieldSize * screenHeight.toPx()
-                    }
+                    return with(density) { y / logicalFieldSize * screenHeight.toPx() }
                 }
 
                 bugs.forEach { bug ->
@@ -222,6 +247,8 @@ fun GameScreen() {
                             }
                             .clickable(
                                 enabled = gameActive,
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
                                 onClick = {
                                     hits++
                                     score += bug.points
