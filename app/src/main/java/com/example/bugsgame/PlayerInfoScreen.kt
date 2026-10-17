@@ -34,7 +34,7 @@ fun PlayerInfoScreen(
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
-            painter = painterResource(id = R.drawable.infoplay_back),
+            painter = painterResource(id = R.drawable.infoplay_back2),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
@@ -43,9 +43,8 @@ fun PlayerInfoScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
             ) {
             Spacer(modifier = Modifier.height(10.dp))
             Text(

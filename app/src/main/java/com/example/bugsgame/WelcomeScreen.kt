@@ -26,7 +26,7 @@ fun WelcomeScreen(
         modifier = Modifier.fillMaxSize()
     ) {
         Image(
-            painter = painterResource(R.drawable.wel_back),
+            painter = painterResource(R.drawable.wel_back2),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop

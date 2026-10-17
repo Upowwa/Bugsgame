@@ -35,7 +35,7 @@ fun SettingsScreen() {
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
-            painter = painterResource(id = R.drawable.settings_back),
+            painter = painterResource(id = R.drawable.settings_back2),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop

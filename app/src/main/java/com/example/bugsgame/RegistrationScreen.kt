@@ -3,7 +3,6 @@ package com.example.bugsgame
 import android.app.DatePickerDialog
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,7 +42,6 @@ import java.util.Calendar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.text.TextStyle
@@ -81,7 +79,7 @@ fun RegistrationScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
-            painter = painterResource(id = R.drawable.regi_back),
+            painter = painterResource(id = R.drawable.regi_back2),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
@@ -205,7 +203,6 @@ fun RegistrationScreen(
                     expanded = showCourseMenu,
                     onDismissRequest = { showCourseMenu = false },
                     modifier = Modifier
-                        .background(Color(0xFFFCF4E0))
                         .border(
                             width = 2.dp,
                             color = MaterialTheme.colorScheme.primary
@@ -257,10 +254,7 @@ fun RegistrationScreen(
                         current.get(Calendar.DAY_OF_MONTH)
                     ).show()
                 },
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = Color(0xFFFCF4E0),
-                    contentColor = Green
-                ),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = Green),
                 border = BorderStroke(
                     1.5.dp,
                     MaterialTheme.colorScheme.primary

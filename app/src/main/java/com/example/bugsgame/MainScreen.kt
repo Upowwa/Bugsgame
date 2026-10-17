@@ -26,7 +26,7 @@ fun MainScreen(
     player: Player,
     onChangePlayer: () -> Unit
 ) {
-    val pagerState = rememberPagerState(pageCount = { 5 })
+    val pagerState = rememberPagerState(pageCount = { 6 })
     val coroutineScope = rememberCoroutineScope()
     var isGameActive by remember { mutableStateOf(true) }
     val isGamePageLocked = pagerState.currentPage == 2 && isGameActive
@@ -35,6 +35,7 @@ fun MainScreen(
         Pair(R.drawable.registration, R.drawable.registration_selected),
         Pair(R.drawable.rules, R.drawable.rules_selected),
         Pair(R.drawable.game, R.drawable.game_selected),
+        Pair(R.drawable.records, R.drawable.records_selected),
         Pair(R.drawable.authors, R.drawable.authors_selected),
         Pair(R.drawable.settings, R.drawable.settings_selected)
     )
@@ -88,8 +89,9 @@ fun MainScreen(
                         isGameActive = active
                     }
                 )
-                3 -> AuthorsScreen()
-                4 -> SettingsScreen()
+                3 -> RecordsScreen()
+                4 -> AuthorsScreen()
+                5 -> SettingsScreen()
             }
         }
     }
