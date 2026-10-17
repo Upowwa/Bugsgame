@@ -46,7 +46,6 @@ import kotlin.time.Duration.Companion.milliseconds
 @Composable
 fun GameScreen(
     playerId: Int,
-    difficulty: Int,
     onGameActiveChange: (Boolean) -> Unit
 ) {
     val context = LocalContext.current
@@ -84,7 +83,7 @@ fun GameScreen(
                     hits = hits,
                     misses = misses,
                     accuracy = accuracy,
-                    difficulty = difficulty
+                    gameSpeed = gameSpeed.toInt()
                 )
             )
         }

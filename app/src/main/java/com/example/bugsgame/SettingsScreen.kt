@@ -80,7 +80,7 @@ fun SettingsScreen() {
                     GameSettings.saveMaxBeetles(context, it)
                 },
                 valueRange = 10f..30f,
-                steps = 19,
+                steps = 3,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -99,7 +99,7 @@ fun SettingsScreen() {
                     GameSettings.saveBonusInterval(context, it)
                 },
                 valueRange = 20f..40f,
-                steps = 18,
+                steps = 3,
                 modifier = Modifier.fillMaxWidth()
             )
 

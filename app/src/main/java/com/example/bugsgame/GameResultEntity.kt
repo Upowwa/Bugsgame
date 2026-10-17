@@ -12,6 +12,6 @@ data class GameResultEntity(
     val hits: Int,
     val misses: Int,
     val accuracy: Float,
-    val difficulty: Int,
+    val gameSpeed: Int,
     val date: Long = System.currentTimeMillis()
 )

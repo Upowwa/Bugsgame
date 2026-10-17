@@ -11,7 +11,7 @@ import androidx.room.withTransaction
         PlayerEntity::class,
         GameResultEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -29,7 +29,9 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "bugsgame_database"
-                ).build().also { INSTANCE = it }
+                )
+                    .fallbackToDestructiveMigration(dropAllTables = true)
+                    .build().also { INSTANCE = it }
             }
         }
     }

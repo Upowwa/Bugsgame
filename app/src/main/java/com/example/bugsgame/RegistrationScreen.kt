@@ -3,6 +3,7 @@ package com.example.bugsgame
 import android.app.DatePickerDialog
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,11 +25,9 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -54,6 +53,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.border
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,7 +69,6 @@ fun RegistrationScreen(
     var fullName by remember { mutableStateOf("") }
     var gender by remember { mutableStateOf("") }
     var course by remember { mutableStateOf("1 курс") }
-    var difficulty by remember { mutableIntStateOf(1) }
     var birthDate by remember { mutableStateOf(Calendar.getInstance()) }
     var showCourseMenu by remember { mutableStateOf(false) }
 
@@ -204,10 +203,15 @@ fun RegistrationScreen(
 
                 ExposedDropdownMenu(
                     expanded = showCourseMenu,
-                    onDismissRequest = { showCourseMenu = false }
+                    onDismissRequest = { showCourseMenu = false },
+                    modifier = Modifier
+                        .background(Color(0xFFFCF4E0))
+                        .border(
+                            width = 2.dp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                 ) {
                     courses.forEach { selectedCourse ->
-
                         DropdownMenuItem(
                             text = {
                                 Text(
@@ -224,24 +228,6 @@ fun RegistrationScreen(
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(30.dp))
-
-            Text(
-                text = stringResource(R.string.difficulty, difficulty),
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Green
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            Slider(
-                value = difficulty.toFloat(),
-                onValueChange = { difficulty = it.toInt() },
-                valueRange = 1f..5f,
-                steps = 3,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-            )
             Spacer(modifier = Modifier.height(25.dp))
 
             Text(
@@ -298,7 +284,6 @@ fun RegistrationScreen(
                         fullName = fullName.trim(),
                         gender = gender.ifEmpty { "Не указан" },
                         course = course,
-                        difficulty = difficulty,
                         birthDate = dateFormat.format(birthDate.time),
                         zodiac = zodiac
                     )
@@ -309,7 +294,6 @@ fun RegistrationScreen(
                                 fullName = newPlayer.fullName,
                                 gender = newPlayer.gender,
                                 course = newPlayer.course,
-                                difficulty = newPlayer.difficulty,
                                 birthDate = newPlayer.birthDate,
                                 zodiac = newPlayer.zodiac
                             )

@@ -79,14 +79,14 @@ fun PlayerSelectionScreen(
                 isLoading -> {
                     Text(
                         text = "Загрузка пользователей...",
-                        fontSize = 20.sp,
+                        fontSize = 19.sp,
                         color = Green
                     )
                 }
                 players.isEmpty() -> {
                     Text(
                         text = "Сохранённых пользователей пока нет",
-                        fontSize = 20.sp,
+                        fontSize = 19.sp,
                         color = Green
                     )
                 }
@@ -104,7 +104,6 @@ fun PlayerSelectionScreen(
                                             fullName = savedPlayer.fullName,
                                             gender = savedPlayer.gender,
                                             course = savedPlayer.course,
-                                            difficulty = savedPlayer.difficulty,
                                             birthDate = savedPlayer.birthDate,
                                             zodiac = savedPlayer.zodiac
                                         )

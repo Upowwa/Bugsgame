@@ -73,7 +73,6 @@ fun PlayerInfoScreen(
                         player.fullName,
                         player.gender,
                         player.course,
-                        player.difficulty,
                         player.birthDate,
                         player.zodiac
                     ),

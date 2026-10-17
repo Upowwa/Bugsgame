@@ -84,7 +84,6 @@ fun MainScreen(
                 1 -> RulesScreen()
                 2 -> GameScreen(
                     playerId = player.id,
-                    difficulty = player.difficulty,
                     onGameActiveChange = { active ->
                         isGameActive = active
                     }
