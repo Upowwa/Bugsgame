@@ -50,6 +50,8 @@ import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
 import kotlin.random.Random
 import androidx.compose.runtime.withFrameNanos
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Duration.Companion.milliseconds
 
 
 private fun playBeetleScream(context: Context) {
@@ -64,10 +66,10 @@ private fun playBeetleScream(context: Context) {
 
 private fun createReplacementBug(
     id: Int,
-    gameSpeed: Float,
-    logicalFieldSize: Float,
-    logicalBugSize: Float
+    gameSpeed: Float
 ): Bug {
+    val logicalFieldSize = 1000f
+    val logicalBugSize = 50f
     val bugType: BugType
     val points: Int
     val imageRes: Int
@@ -125,12 +127,9 @@ fun GameScreen(
     var hits by remember { mutableIntStateOf(0) }
     var misses by remember { mutableIntStateOf(0) }
 
-    var remainingSeconds by remember {
-        mutableIntStateOf(roundDuration * 60)
-    }
+    var remainingSeconds by remember { mutableIntStateOf(roundDuration * 60) }
     var gameActive by remember { mutableStateOf(true) }
 
-    // Состояние бонуса и наклона телефона
     var bonusVisible by remember { mutableStateOf(false) }
     var bonusX by remember { mutableFloatStateOf(0.5f) }
     var bonusY by remember { mutableFloatStateOf(0.5f) }
@@ -139,12 +138,8 @@ fun GameScreen(
     var tiltX by remember { mutableFloatStateOf(0f) }
     var tiltY by remember { mutableFloatStateOf(0f) }
 
-    val sensorManager = remember {
-        context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-    }
-    val accelerometer = remember {
-        sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-    }
+    val sensorManager = remember { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
+    val accelerometer = remember { sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) }
 
     LaunchedEffect(gameActive) {
         onGameActiveChange(gameActive)
@@ -189,13 +184,11 @@ fun GameScreen(
                     points = 1
                     imageRes = R.drawable.bug1
                 }
-
                 in 60..89 -> {
                     bugType = BugType.FAST
                     points = 2
                     imageRes = R.drawable.bug2
                 }
-
                 else -> {
                     bugType = BugType.RARE
                     points = 5
@@ -220,35 +213,29 @@ fun GameScreen(
         }
     }
 
-    LaunchedEffect(Unit) {
-        createBugs()
-    }
-
+    LaunchedEffect(Unit) { createBugs() }
     LaunchedEffect(gameActive) {
         if (gameActive) {
             while (remainingSeconds > 0 && gameActive) {
-                delay(1000)
+                delay(1.seconds)
                 remainingSeconds--
             }
-
             if (remainingSeconds <= 0) {
                 gameActive = false
             }
         }
     }
 
-
     LaunchedEffect(gameActive) {
         while (gameActive) {
-            delay(15_000)
+            delay(15.seconds)
 
             if (gameActive && !tiltActive) {
                 bonusX = Random.nextFloat() * 0.7f + 0.15f
                 bonusY = Random.nextFloat() * 0.7f + 0.15f
                 bonusVisible = true
 
-                delay(1_500)
-
+                delay(1500.milliseconds)
                 bonusVisible = false
             }
         }
@@ -257,11 +244,8 @@ fun GameScreen(
         if (tiltActive && gameActive && accelerometer != null) {
             val listener = object : SensorEventListener {
                 override fun onSensorChanged(event: SensorEvent) {
-                    tiltX = (-event.values[0] / SensorManager.GRAVITY_EARTH)
-                        .coerceIn(-1f, 1f)
-
-                    tiltY = (event.values[1] / SensorManager.GRAVITY_EARTH)
-                        .coerceIn(-1f, 1f)
+                    tiltX = (-event.values[0] / SensorManager.GRAVITY_EARTH).coerceIn(-1f, 1f)
+                    tiltY = (event.values[1] / SensorManager.GRAVITY_EARTH).coerceIn(-1f, 1f)
                 }
 
                 override fun onAccuracyChanged(
@@ -276,9 +260,7 @@ fun GameScreen(
                 SensorManager.SENSOR_DELAY_GAME
             )
 
-            onDispose {
-                sensorManager.unregisterListener(listener)
-            }
+            onDispose { sensorManager.unregisterListener(listener) }
         } else {
             onDispose {}
         }
@@ -286,7 +268,7 @@ fun GameScreen(
 
     LaunchedEffect(tiltActive) {
         if (tiltActive) {
-            delay(8_000)
+            delay(8.seconds)
             tiltActive = false
             tiltX = 0f
             tiltY = 0f
@@ -302,10 +284,8 @@ fun GameScreen(
             val deltaSeconds = if (previousFrameTime == 0L) {
                 0f
             } else {
-                ((frameTime - previousFrameTime) / 1_000_000_000f)
-                    .coerceIn(0f, 0.05f)
+                ((frameTime - previousFrameTime) / 1_000_000_000f).coerceIn(0f, 0.05f)
             }
-
             previousFrameTime = frameTime
 
             val frameScale = deltaSeconds / 0.03f
@@ -327,18 +307,14 @@ fun GameScreen(
                     val newY = bug.y + fallY * fallSpeed
 
                     val hasLeftField =
-                        newX < -logicalBugSize ||
-                                newX > logicalFieldSize ||
-                                newY < -logicalBugSize ||
-                                newY > logicalFieldSize
+                        newX < -logicalBugSize || newX > logicalFieldSize ||
+                                newY < -logicalBugSize || newY > logicalFieldSize
 
                     if (hasLeftField) {
                         fallingBugIds.remove(bug.id)
                         bugs[index] = createReplacementBug(
                             bug.id,
-                            gameSpeed,
-                            logicalFieldSize,
-                            logicalBugSize
+                            gameSpeed
                         )
                     } else {
                         bugs[index] = bug.copy(
@@ -348,23 +324,17 @@ fun GameScreen(
                             dy = fallY
                         )
                     }
-
                     index++
                     continue
                 }
 
-                var newX = bug.x +
-                        (if (tiltActive) tiltX * 2f else bug.dx) * movement
-
-                var newY = bug.y +
-                        (if (tiltActive) tiltY * 2f else bug.dy) * movement
+                var newX = bug.x + (if (tiltActive) tiltX * 2f else bug.dx) * movement
+                var newY = bug.y + (if (tiltActive) tiltY * 2f else bug.dy) * movement
 
                 var newDx = bug.dx
                 var newDy = bug.dy
 
-                if (newX < 0f ||
-                    newX > logicalFieldSize - logicalBugSize
-                ) {
+                if (newX < 0f || newX > logicalFieldSize - logicalBugSize) {
                     newX = newX.coerceIn(
                         0f,
                         logicalFieldSize - logicalBugSize
@@ -372,9 +342,7 @@ fun GameScreen(
                     if (!tiltActive) newDx = -bug.dx
                 }
 
-                if (newY < 0f ||
-                    newY > logicalFieldSize - logicalBugSize
-                ) {
+                if (newY < 0f || newY > logicalFieldSize - logicalBugSize) {
                     newY = newY.coerceIn(
                         0f,
                         logicalFieldSize - logicalBugSize
@@ -388,7 +356,6 @@ fun GameScreen(
                     dx = newDx,
                     dy = newDy
                 )
-
                 index++
             }
         }
@@ -445,9 +412,7 @@ fun GameScreen(
                     .weight(1f)
                     .clickable(
                         enabled = gameActive,
-                        interactionSource = remember {
-                            MutableInteractionSource()
-                        },
+                        interactionSource = remember { MutableInteractionSource() },
                         indication = null,
                         onClick = {
                             misses++
@@ -492,16 +457,13 @@ fun GameScreen(
                                     hits++
                                     score += bug.points
 
-                                    val index =
-                                        bugs.indexOfFirst { it.id == bug.id }
+                                    val index = bugs.indexOfFirst { it.id == bug.id }
 
                                     if (index != -1) {
                                         fallingBugIds.remove(bug.id)
                                         bugs[index] = bug.copy(
-                                            x = Random.nextFloat() *
-                                                    (logicalFieldSize - logicalBugSize),
-                                            y = Random.nextFloat() *
-                                                    (logicalFieldSize - logicalBugSize)
+                                            x = Random.nextFloat() * (logicalFieldSize - logicalBugSize),
+                                            y = Random.nextFloat() * (logicalFieldSize - logicalBugSize)
                                         )
                                     }
                                 }
@@ -511,15 +473,14 @@ fun GameScreen(
 
                 if (bonusVisible && gameActive) {
                     Column(
-                        modifier = Modifier
-                            .offset(
-                                x = screenWidth * bonusX - 60.dp,
-                                y = screenHeight * bonusY - 70.dp
+                        modifier = Modifier.offset {
+                            IntOffset(
+                                x = with(density) { (screenWidth * bonusX - 60.dp).roundToPx() },
+                                y = with(density) { (screenHeight * bonusY - 70.dp).roundToPx() }
                             )
+                        }
                             .clickable(
-                                interactionSource = remember {
-                                    MutableInteractionSource()
-                                },
+                                interactionSource = remember { MutableInteractionSource() },
                                 indication = null
                             ) {
                                 bonusVisible = false
@@ -527,22 +488,14 @@ fun GameScreen(
 
                                 bugs.forEach { fallingBugIds.add(it.id) }
                                 playBeetleScream(context)
-
                             }
                             .padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Image(
-                            painter = painterResource(R.drawable.bonus_tilt),
+                            painter = painterResource(R.drawable.bonus),
                             contentDescription = "Бонус наклона",
                             modifier = Modifier.size(90.dp)
-                        )
-
-                        Text(
-                            text = "БОНУС!",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Yellow
                         )
 
                         if (tiltActive) {
@@ -582,7 +535,6 @@ fun GameScreen(
                         fontWeight = FontWeight.Bold,
                         color = Green
                     )
-
                     Spacer(modifier = Modifier.height(30.dp))
 
                     Text(
@@ -618,7 +570,6 @@ fun GameScreen(
                         fontSize = 25.sp,
                         color = Green
                     )
-
                     Spacer(modifier = Modifier.height(40.dp))
 
                     Button(
