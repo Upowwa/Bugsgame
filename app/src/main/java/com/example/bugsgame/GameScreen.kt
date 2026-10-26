@@ -51,7 +51,7 @@ import kotlin.math.roundToInt
 import kotlin.random.Random
 import androidx.compose.runtime.withFrameNanos
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.Duration.Companion.milliseconds
+import com.example.bugsgame.data.GoldPriceRepository
 
 
 private fun playBeetleScream(context: Context) {
@@ -124,6 +124,7 @@ fun GameScreen(
     val logicalBugSize = 50f
 
     var score by remember { mutableIntStateOf(0) }
+    var bonusScore by remember { mutableIntStateOf(0) }
     var hits by remember { mutableIntStateOf(0) }
     var misses by remember { mutableIntStateOf(0) }
 
@@ -132,19 +133,23 @@ fun GameScreen(
 
     var bonusVisible by remember { mutableStateOf(false) }
     var bonusX by remember { mutableFloatStateOf(0.5f) }
-    var bonusY by remember { mutableFloatStateOf(0.5f) }
+    var bonusY by remember { mutableFloatStateOf(-0.15f) }
 
     var tiltActive by remember { mutableStateOf(false) }
     var tiltX by remember { mutableFloatStateOf(0f) }
     var tiltY by remember { mutableFloatStateOf(0f) }
 
+    var goldBugVisible by remember { mutableStateOf(false) }
+    var goldBugX by remember { mutableFloatStateOf(0.5f) }
+    var goldBugY by remember { mutableFloatStateOf(0.5f) }
+    var goldPrice by remember { mutableFloatStateOf(0f) }
+    var goldBugDx by remember { mutableFloatStateOf(1f) }
+    var goldBugDy by remember { mutableFloatStateOf(1f) }
+
     val sensorManager = remember { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
     val accelerometer = remember { sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) }
 
-    LaunchedEffect(gameActive) {
-        onGameActiveChange(gameActive)
-    }
-
+    LaunchedEffect(gameActive) { onGameActiveChange(gameActive) }
     LaunchedEffect(gameActive) {
         if (!gameActive) {
             val accuracy = if (hits + misses > 0) {
@@ -152,11 +157,10 @@ fun GameScreen(
             } else {
                 0f
             }
-
             database.gameResultDao().insert(
                 GameResultEntity(
                     playerId = playerId,
-                    score = score,
+                    score = score + bonusScore,
                     hits = hits,
                     misses = misses,
                     accuracy = accuracy,
@@ -214,6 +218,11 @@ fun GameScreen(
     }
 
     LaunchedEffect(Unit) { createBugs() }
+    LaunchedEffect(Unit) {
+        val repository = GoldPriceRepository(context)
+        val price = repository.refreshPrice() ?: repository.getSavedPrice()
+        goldPrice = price?.price?.toFloat() ?: 0f
+    }
     LaunchedEffect(gameActive) {
         if (gameActive) {
             while (remainingSeconds > 0 && gameActive) {
@@ -229,15 +238,67 @@ fun GameScreen(
     LaunchedEffect(gameActive) {
         while (gameActive) {
             delay(15.seconds)
-
             if (gameActive && !tiltActive) {
                 bonusX = Random.nextFloat() * 0.7f + 0.15f
-                bonusY = Random.nextFloat() * 0.7f + 0.15f
+                bonusY = -0.15f
                 bonusVisible = true
 
-                delay(1500.milliseconds)
+                while (bonusVisible && bonusY < 1.15f && gameActive) {
+                    withFrameNanos { }
+                    bonusY += 0.003f
+                }
                 bonusVisible = false
             }
+        }
+    }
+    LaunchedEffect(gameActive) {
+        while (gameActive) {
+            delay(20.seconds)
+
+            if (gameActive) {
+                goldBugX = Random.nextFloat() * (logicalFieldSize - logicalBugSize)
+                goldBugY = Random.nextFloat() * (logicalFieldSize - logicalBugSize)
+
+                goldBugDx = if (Random.nextBoolean()) 1f else -1f
+                goldBugDy = if (Random.nextBoolean()) 1f else -1f
+
+                goldBugVisible = true
+
+                delay(5.seconds)
+                goldBugVisible = false
+            }
+        }
+    }
+    LaunchedEffect(goldBugVisible, gameActive) {
+        var previousFrameTime = 0L
+        while (goldBugVisible && gameActive) {
+            val frameTime = withFrameNanos { it }
+            val deltaSeconds = if (previousFrameTime == 0L) {
+                0f
+            } else {
+                ((frameTime - previousFrameTime) / 1_000_000_000f).coerceIn(0f, 0.05f)
+            }
+
+            previousFrameTime = frameTime
+
+            val frameScale = deltaSeconds / 0.03f
+            val movement = gameSpeed * 2f * frameScale
+
+            var newX = goldBugX + goldBugDx * movement
+            var newY = goldBugY + goldBugDy * movement
+
+            if (newX < 0f || newX > logicalFieldSize - logicalBugSize) {
+                goldBugDx = -goldBugDx
+                newX = newX.coerceIn(0f, logicalFieldSize - logicalBugSize)
+            }
+
+            if (newY < 0f || newY > logicalFieldSize - logicalBugSize) {
+                goldBugDy = -goldBugDy
+                newY = newY.coerceIn(0f, logicalFieldSize - logicalBugSize)
+            }
+
+            goldBugX = newX
+            goldBugY = newY
         }
     }
     DisposableEffect(tiltActive, gameActive, accelerometer) {
@@ -378,12 +439,7 @@ fun GameScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(
-                        start = 30.dp,
-                        top = 15.dp,
-                        end = 30.dp,
-                        bottom = 15.dp
-                    ),
+                    .padding(start = 30.dp, top = 15.dp, end = 30.dp, bottom = 15.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -405,6 +461,18 @@ fun GameScreen(
                     color = Color.White
                 )
             }
+            if (tiltActive && gameActive) {
+                Text(
+                    text = "Наклоняй телефон!",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    fontSize = 25.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+            }
 
             BoxWithConstraints(
                 modifier = Modifier
@@ -424,15 +492,11 @@ fun GameScreen(
                 val screenHeight = maxHeight
 
                 fun logicalToScreenX(x: Float): Float {
-                    return with(density) {
-                        x / logicalFieldSize * screenWidth.toPx()
-                    }
+                    return with(density) { x / logicalFieldSize * screenWidth.toPx() }
                 }
 
                 fun logicalToScreenY(y: Float): Float {
-                    return with(density) {
-                        y / logicalFieldSize * screenHeight.toPx()
-                    }
+                    return with(density) { y / logicalFieldSize * screenHeight.toPx() }
                 }
 
                 bugs.forEach { bug ->
@@ -470,13 +534,37 @@ fun GameScreen(
                             )
                     )
                 }
+                if (goldBugVisible && gameActive) {
+                    Image(
+                        painter = painterResource(R.drawable.gold_bug),
+                        contentDescription = "Золотой таракан",
+                        modifier = Modifier
+                            .size(bugSize)
+                            .offset {
+                                IntOffset(
+                                    logicalToScreenX(goldBugX).roundToInt(),
+                                    logicalToScreenY(goldBugY).roundToInt()
+                                )
+                            }
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                                onClick = {
+                                    goldBugVisible = false
+                                    val bonusPoints = (goldPrice / 1000f).roundToInt()
+                                    bonusScore += bonusPoints
+                                    hits++
+                                }
+                            )
+                    )
+                }
 
                 if (bonusVisible && gameActive) {
                     Column(
                         modifier = Modifier.offset {
                             IntOffset(
                                 x = with(density) { (screenWidth * bonusX - 60.dp).roundToPx() },
-                                y = with(density) { (screenHeight * bonusY - 70.dp).roundToPx() }
+                                y = with(density) { (screenHeight * bonusY).roundToPx() }
                             )
                         }
                             .clickable(
@@ -495,17 +583,8 @@ fun GameScreen(
                         Image(
                             painter = painterResource(R.drawable.bonus),
                             contentDescription = "Бонус наклона",
-                            modifier = Modifier.size(90.dp)
+                            modifier = Modifier.size(75.dp)
                         )
-
-                        if (tiltActive) {
-                            Text(
-                                text = "Наклоняй телефон!",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                        }
                     }
                 }
             }
@@ -538,8 +617,9 @@ fun GameScreen(
                     Spacer(modifier = Modifier.height(30.dp))
 
                     Text(
-                        text = "очки: $score",
+                        text = "очки: $score + $bonusScore",
                         fontSize = 25.sp,
+                        fontWeight = FontWeight.Bold,
                         color = Green
                     )
 
@@ -575,11 +655,13 @@ fun GameScreen(
                     Button(
                         onClick = {
                             score = 0
+                            bonusScore = 0
                             hits = 0
                             misses = 0
                             remainingSeconds = roundDuration * 60
                             bonusVisible = false
                             tiltActive = false
+                            goldBugVisible = false
                             tiltX = 0f
                             tiltY = 0f
                             gameActive = true
