@@ -15,8 +15,11 @@
 
     <string name="game_speed">Скорость игры</string>
     <string name="max_num_beetles">Максимальное количество тараканов</string>
-    <string name="bonus_interval">Интервал появления бонусов</string>
+    <string name="bonus_interval">Интервал появления бонуса |Наклон|</string>
     <string name="round_duration">Длительность раунда</string>
 
-    <string name="gold_loading">Загрузка...</string>
+    <string name="gold_loading">Загрузка..</string>
+    <string name="gold_widget_description">Курс золота ЦБ РФ</string>
+    <string name="gold_widget_title">ЗОЛОТО ЦБ</string>
+    <string name="gold_widget_per_gram">за грамм</string>
 </resources>

@@ -1,29 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="120dp"
-    android:layout_height="120dp"
-    android:background="@drawable/gold_sphere_circle"
-    android:clipToOutline="true">
+    android:layout_width="130dp"
+    android:layout_height="130dp"
+    android:background="@android:color/transparent"
+    android:padding="4dp"
+    android:rotation="2"
+    android:rotationX="13"
+    android:rotationY="-2"
+    android:visibility="visible">
 
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:src="@drawable/gold_sphere"
-        android:scaleType="centerCrop"
-        android:background="@drawable/gold_sphere_circle"
+        android:clipToOutline="true"
+        android:contentDescription="@null"
+        android:elevation="10dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/gold_ball" />
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/gold_glass_overlay"
         android:clipToOutline="true"
         android:contentDescription="@null" />
 
-    <TextView
-        android:id="@+id/goldPriceText"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:text="@string/gold_loading"
-        android:textColor="#FFFFFF"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:maxLines="2"
-        android:ellipsize="end" />
+        android:orientation="vertical"
+        android:padding="5dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:shadowColor="#FF000000"
+            android:shadowDx="0"
+            android:shadowDy="1"
+            android:shadowRadius="3"
+            android:text="@string/gold_widget_title"
+            android:textColor="#FFfdd86f"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/goldPriceText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="2"
+            android:shadowColor="#FF000000"
+            android:shadowDx="0"
+            android:shadowDy="1"
+            android:shadowRadius="4"
+            android:text="@string/gold_loading"
+            android:textColor="#FFfcfcab"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:shadowColor="#FF000000"
+            android:shadowDx="0"
+            android:shadowDy="1"
+            android:shadowRadius="2"
+            android:text="@string/gold_widget_per_gram"
+            android:textColor="#FFe6904b"
+            android:textSize="11sp" />
+
+    </LinearLayout>
 
 </FrameLayout>

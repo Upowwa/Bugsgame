@@ -1,30 +1,20 @@
 package com.example.bugsgame
 
-import android.content.Context
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
-import android.media.MediaPlayer
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -38,73 +28,68 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale
-import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bugsgame.ui.theme.Green
-import kotlinx.coroutines.delay
-import kotlin.math.roundToInt
-import kotlin.random.Random
-import androidx.compose.runtime.withFrameNanos
-import kotlin.time.Duration.Companion.seconds
-import com.example.bugsgame.data.GoldPriceRepository
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.MaterialTheme
 
+class GameSessionState(
+    initialSeconds: Int
+) {
+    val score = mutableIntStateOf(0)
+    val bonusScore = mutableIntStateOf(0)
+    val hits = mutableIntStateOf(0)
+    val misses = mutableIntStateOf(0)
+    val remainingSeconds = mutableIntStateOf(initialSeconds)
 
-private fun playBeetleScream(context: Context) {
-    try {
-        MediaPlayer.create(context, R.raw.beetles_scream)?.let { player ->
-            player.setOnCompletionListener { it.release() }
-            player.start()
-        }
-    } catch (_: Exception) {
+    val bugs = mutableStateListOf<Bug>()
+    val fallingBugIds = mutableStateListOf<Int>()
+    val resetVersion = mutableIntStateOf(0)
+
+    val bonusVisible = mutableStateOf(false)
+    val bonusX = mutableFloatStateOf(0.5f)
+    val bonusY = mutableFloatStateOf(-0.15f)
+    val tiltActive = mutableStateOf(false)
+    val tiltX = mutableFloatStateOf(0f)
+    val tiltY = mutableFloatStateOf(0f)
+
+    val goldBugVisible = mutableStateOf(false)
+    val goldBugX = mutableFloatStateOf(0.5f)
+    val goldBugY = mutableFloatStateOf(0.5f)
+    val goldPrice = mutableFloatStateOf(0f)
+    val goldBugDx = mutableFloatStateOf(1f)
+    val goldBugDy = mutableFloatStateOf(1f)
+
+    fun reset(initialSeconds: Int) {
+        score.intValue = 0
+        bonusScore.intValue = 0
+        hits.intValue = 0
+        misses.intValue = 0
+        remainingSeconds.intValue = initialSeconds
+        bugs.clear()
+        fallingBugIds.clear()
+        bonusVisible.value = false
+        bonusX.floatValue = 0.5f
+        bonusY.floatValue = -0.15f
+        tiltActive.value = false
+        tiltX.floatValue = 0f
+        tiltY.floatValue = 0f
+        goldBugVisible.value = false
+        goldBugX.floatValue = 0.5f
+        goldBugY.floatValue = 0.5f
+        goldBugDx.floatValue = 1f
+        goldBugDy.floatValue = 1f
+        resetVersion.intValue++
     }
 }
 
-private fun createReplacementBug(
-    id: Int,
-    gameSpeed: Float
-): Bug {
-    val logicalFieldSize = 1000f
-    val logicalBugSize = 50f
-    val bugType: BugType
-    val points: Int
-    val imageRes: Int
-
-    when (Random.nextInt(100)) {
-        in 0..59 -> {
-            bugType = BugType.NORMAL
-            points = 1
-            imageRes = R.drawable.bug1
-        }
-        in 60..89 -> {
-            bugType = BugType.FAST
-            points = 2
-            imageRes = R.drawable.bug2
-        }
-        else -> {
-            bugType = BugType.RARE
-            points = 5
-            imageRes = R.drawable.bug3
-        }
-    }
-
-    return Bug(
-        id = id,
-        x = Random.nextFloat() * (logicalFieldSize - logicalBugSize),
-        y = Random.nextFloat() * (logicalFieldSize - logicalBugSize),
-        speed = gameSpeed,
-        size = logicalBugSize,
-        type = bugType,
-        points = points,
-        imageRes = imageRes,
-        dx = if (Random.nextBoolean()) 1f else -1f,
-        dy = if (Random.nextBoolean()) 1f else -1f
-    )
-}
+private enum class GameStatus { READY, PLAYING, PAUSED, FINISHED }
 
 @Composable
 fun GameScreen(
@@ -113,45 +98,33 @@ fun GameScreen(
 ) {
     val context = LocalContext.current
     val database = remember { AppDatabase.getDatabase(context) }
-    val density = LocalDensity.current
+    var activeRoundDuration by remember { mutableIntStateOf(GameSettings.getRoundDuration(context).toInt()) }
+    var activeGameSpeed by remember { mutableIntStateOf(GameSettings.getGameSpeed(context).toInt()) }
+    var activeMaxBeetles by remember { mutableIntStateOf(GameSettings.getMaxBeetles(context).toInt()) }
+    var activeBonusInterval by remember { mutableIntStateOf(GameSettings.getBonusInterval(context).toInt()) }
+    val session = remember { GameSessionState(activeRoundDuration * 60) }
+    var status by remember { mutableStateOf(GameStatus.READY) }
 
-    val gameSpeed = GameSettings.getGameSpeed(context)
-    val maxBeetles = GameSettings.getMaxBeetles(context).toInt()
-    val roundDuration = GameSettings.getRoundDuration(context).toInt()
+    fun startNewRound() {
+        val newRoundDuration = GameSettings.getRoundDuration(context).toInt()
 
-    val logicalFieldSize = 1000f
-    val bugSize = 50.dp
-    val logicalBugSize = 50f
+        activeRoundDuration = newRoundDuration
+        activeGameSpeed = GameSettings.getGameSpeed(context).toInt()
+        activeMaxBeetles = GameSettings.getMaxBeetles(context).toInt()
+        activeBonusInterval = GameSettings.getBonusInterval(context).toInt()
 
-    var score by remember { mutableIntStateOf(0) }
-    var bonusScore by remember { mutableIntStateOf(0) }
-    var hits by remember { mutableIntStateOf(0) }
-    var misses by remember { mutableIntStateOf(0) }
+        session.reset(newRoundDuration * 60)
+        status = GameStatus.PLAYING
+    }
 
-    var remainingSeconds by remember { mutableIntStateOf(roundDuration * 60) }
-    var gameActive by remember { mutableStateOf(true) }
+    LaunchedEffect(status) {
+        onGameActiveChange(status == GameStatus.PLAYING)
+    }
 
-    var bonusVisible by remember { mutableStateOf(false) }
-    var bonusX by remember { mutableFloatStateOf(0.5f) }
-    var bonusY by remember { mutableFloatStateOf(-0.15f) }
-
-    var tiltActive by remember { mutableStateOf(false) }
-    var tiltX by remember { mutableFloatStateOf(0f) }
-    var tiltY by remember { mutableFloatStateOf(0f) }
-
-    var goldBugVisible by remember { mutableStateOf(false) }
-    var goldBugX by remember { mutableFloatStateOf(0.5f) }
-    var goldBugY by remember { mutableFloatStateOf(0.5f) }
-    var goldPrice by remember { mutableFloatStateOf(0f) }
-    var goldBugDx by remember { mutableFloatStateOf(1f) }
-    var goldBugDy by remember { mutableFloatStateOf(1f) }
-
-    val sensorManager = remember { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
-    val accelerometer = remember { sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) }
-
-    LaunchedEffect(gameActive) { onGameActiveChange(gameActive) }
-    LaunchedEffect(gameActive) {
-        if (!gameActive) {
+    LaunchedEffect(status) {
+        if (status == GameStatus.FINISHED) {
+            val hits = session.hits.intValue
+            val misses = session.misses.intValue
             val accuracy = if (hits + misses > 0) {
                 hits.toFloat() / (hits + misses) * 100f
             } else {
@@ -160,451 +133,156 @@ fun GameScreen(
             database.gameResultDao().insert(
                 GameResultEntity(
                     playerId = playerId,
-                    score = score + bonusScore,
+                    score = session.score.intValue + session.bonusScore.intValue,
                     hits = hits,
                     misses = misses,
                     accuracy = accuracy,
-                    gameSpeed = gameSpeed.toInt()
+                    gameSpeed = activeGameSpeed
                 )
             )
         }
     }
 
-    val bugs = remember { mutableStateListOf<Bug>() }
-    val fallingBugIds = remember { mutableStateListOf<Int>() }
-
-    fun createBugs() {
-        bugs.clear()
-        fallingBugIds.clear()
-
-        repeat(maxBeetles) { index ->
-            val bugType: BugType
-            val points: Int
-            val imageRes: Int
-
-            when (Random.nextInt(100)) {
-                in 0..59 -> {
-                    bugType = BugType.NORMAL
-                    points = 1
-                    imageRes = R.drawable.bug1
-                }
-                in 60..89 -> {
-                    bugType = BugType.FAST
-                    points = 2
-                    imageRes = R.drawable.bug2
-                }
-                else -> {
-                    bugType = BugType.RARE
-                    points = 5
-                    imageRes = R.drawable.bug3
-                }
-            }
-
-            bugs.add(
-                Bug(
-                    id = index,
-                    x = Random.nextFloat() * (logicalFieldSize - logicalBugSize),
-                    y = Random.nextFloat() * (logicalFieldSize - logicalBugSize),
-                    speed = gameSpeed,
-                    size = logicalBugSize,
-                    type = bugType,
-                    points = points,
-                    imageRes = imageRes,
-                    dx = if (Random.nextBoolean()) 1f else -1f,
-                    dy = if (Random.nextBoolean()) 1f else -1f
-                )
-            )
-        }
-    }
-
-    LaunchedEffect(Unit) { createBugs() }
-    LaunchedEffect(Unit) {
-        val repository = GoldPriceRepository(context)
-        val price = repository.refreshPrice() ?: repository.getSavedPrice()
-        goldPrice = price?.price?.toFloat() ?: 0f
-    }
-    LaunchedEffect(gameActive) {
-        if (gameActive) {
-            while (remainingSeconds > 0 && gameActive) {
-                delay(1.seconds)
-                remainingSeconds--
-            }
-            if (remainingSeconds <= 0) {
-                gameActive = false
-            }
-        }
-    }
-
-    LaunchedEffect(gameActive) {
-        while (gameActive) {
-            delay(15.seconds)
-            if (gameActive && !tiltActive) {
-                bonusX = Random.nextFloat() * 0.7f + 0.15f
-                bonusY = -0.15f
-                bonusVisible = true
-
-                while (bonusVisible && bonusY < 1.15f && gameActive) {
-                    withFrameNanos { }
-                    bonusY += 0.003f
-                }
-                bonusVisible = false
-            }
-        }
-    }
-    LaunchedEffect(gameActive) {
-        while (gameActive) {
-            delay(20.seconds)
-
-            if (gameActive) {
-                goldBugX = Random.nextFloat() * (logicalFieldSize - logicalBugSize)
-                goldBugY = Random.nextFloat() * (logicalFieldSize - logicalBugSize)
-
-                goldBugDx = if (Random.nextBoolean()) 1f else -1f
-                goldBugDy = if (Random.nextBoolean()) 1f else -1f
-
-                goldBugVisible = true
-
-                delay(5.seconds)
-                goldBugVisible = false
-            }
-        }
-    }
-    LaunchedEffect(goldBugVisible, gameActive) {
-        var previousFrameTime = 0L
-        while (goldBugVisible && gameActive) {
-            val frameTime = withFrameNanos { it }
-            val deltaSeconds = if (previousFrameTime == 0L) {
-                0f
-            } else {
-                ((frameTime - previousFrameTime) / 1_000_000_000f).coerceIn(0f, 0.05f)
-            }
-
-            previousFrameTime = frameTime
-
-            val frameScale = deltaSeconds / 0.03f
-            val movement = gameSpeed * 2f * frameScale
-
-            var newX = goldBugX + goldBugDx * movement
-            var newY = goldBugY + goldBugDy * movement
-
-            if (newX < 0f || newX > logicalFieldSize - logicalBugSize) {
-                goldBugDx = -goldBugDx
-                newX = newX.coerceIn(0f, logicalFieldSize - logicalBugSize)
-            }
-
-            if (newY < 0f || newY > logicalFieldSize - logicalBugSize) {
-                goldBugDy = -goldBugDy
-                newY = newY.coerceIn(0f, logicalFieldSize - logicalBugSize)
-            }
-
-            goldBugX = newX
-            goldBugY = newY
-        }
-    }
-    DisposableEffect(tiltActive, gameActive, accelerometer) {
-        if (tiltActive && gameActive && accelerometer != null) {
-            val listener = object : SensorEventListener {
-                override fun onSensorChanged(event: SensorEvent) {
-                    tiltX = (-event.values[0] / SensorManager.GRAVITY_EARTH).coerceIn(-1f, 1f)
-                    tiltY = (event.values[1] / SensorManager.GRAVITY_EARTH).coerceIn(-1f, 1f)
-                }
-
-                override fun onAccuracyChanged(
-                    sensor: Sensor?,
-                    accuracy: Int
-                ) = Unit
-            }
-
-            sensorManager.registerListener(
-                listener,
-                accelerometer,
-                SensorManager.SENSOR_DELAY_GAME
-            )
-
-            onDispose { sensorManager.unregisterListener(listener) }
-        } else {
-            onDispose {}
-        }
-    }
-
-    LaunchedEffect(tiltActive) {
-        if (tiltActive) {
-            delay(8.seconds)
-            tiltActive = false
-            tiltX = 0f
-            tiltY = 0f
-        }
-    }
-
-    LaunchedEffect(gameActive) {
-        var previousFrameTime = 0L
-
-        while (gameActive) {
-            val frameTime = withFrameNanos { it }
-
-            val deltaSeconds = if (previousFrameTime == 0L) {
-                0f
-            } else {
-                ((frameTime - previousFrameTime) / 1_000_000_000f).coerceIn(0f, 0.05f)
-            }
-            previousFrameTime = frameTime
-
-            val frameScale = deltaSeconds / 0.03f
-
-            var index = 0
-            while (index < bugs.size) {
-                val bug = bugs[index]
-                val movement = bug.speed * 2f * frameScale
-
-                val isFalling = fallingBugIds.contains(bug.id)
-
-                if (isFalling) {
-                    val fallSpeed = movement * 8f
-
-                    val fallX = if (tiltActive) tiltX else 0f
-                    val fallY = 1f
-
-                    val newX = bug.x + fallX * fallSpeed
-                    val newY = bug.y + fallY * fallSpeed
-
-                    val hasLeftField =
-                        newX < -logicalBugSize || newX > logicalFieldSize ||
-                                newY < -logicalBugSize || newY > logicalFieldSize
-
-                    if (hasLeftField) {
-                        fallingBugIds.remove(bug.id)
-                        bugs[index] = createReplacementBug(
-                            bug.id,
-                            gameSpeed
-                        )
-                    } else {
-                        bugs[index] = bug.copy(
-                            x = newX,
-                            y = newY,
-                            dx = fallX,
-                            dy = fallY
-                        )
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (status != GameStatus.READY) {
+            GamePlayScreen(
+                state = session,
+                isPlaying = status == GameStatus.PLAYING,
+                gameSpeed = activeGameSpeed.toFloat(),
+                maxBeetles = activeMaxBeetles,
+                bonusInterval = activeBonusInterval,
+                onTimeExpired = {
+                    if (status == GameStatus.PLAYING) {
+                        status = GameStatus.FINISHED
                     }
-                    index++
-                    continue
+                },
+                onPause = {
+                    if (status == GameStatus.PLAYING) {
+                        status = GameStatus.PAUSED
+                    }
                 }
-
-                var newX = bug.x + (if (tiltActive) tiltX * 2f else bug.dx) * movement
-                var newY = bug.y + (if (tiltActive) tiltY * 2f else bug.dy) * movement
-
-                var newDx = bug.dx
-                var newDy = bug.dy
-
-                if (newX < 0f || newX > logicalFieldSize - logicalBugSize) {
-                    newX = newX.coerceIn(
-                        0f,
-                        logicalFieldSize - logicalBugSize
-                    )
-                    if (!tiltActive) newDx = -bug.dx
-                }
-
-                if (newY < 0f || newY > logicalFieldSize - logicalBugSize) {
-                    newY = newY.coerceIn(
-                        0f,
-                        logicalFieldSize - logicalBugSize
-                    )
-                    if (!tiltActive) newDy = -bug.dy
-                }
-
-                bugs[index] = bug.copy(
-                    x = newX,
-                    y = newY,
-                    dx = newDx,
-                    dy = newDy
-                )
-                index++
-            }
+            )
         }
-    }
 
-
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Image(
-            painter = painterResource(R.drawable.back_game),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-        )
-
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 30.dp, top = 15.dp, end = 30.dp, bottom = 15.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "${remainingSeconds / 60}:${
-                        (remainingSeconds % 60)
-                            .toString()
-                            .padStart(2, '0')
-                    }",
-                    fontSize = 30.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
+        when (status) {
+            GameStatus.READY -> {
+                Image(
+                    painter = painterResource(R.drawable.back_game),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
                 )
-
-                Text(
-                    text = "$score",
-                    fontSize = 30.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            }
-            if (tiltActive && gameActive) {
-                Text(
-                    text = "Наклоняй телефон!",
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                    fontSize = 25.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                )
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.7f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(50.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "BugsGame",
+                            fontSize = 50.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        Text(
+                            text = "Лови жуков, набирай очки и побей свой рекорд!",
+                            fontSize = 25.sp,
+                            modifier = Modifier.fillMaxWidth(),
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            color = Color.White.copy(alpha = 0.7f)
+                        )
+                        Spacer(modifier = Modifier.height(60.dp))
+
+                        Text(
+                            text = "Нажмите, чтобы начать",
+                            fontSize = 16.sp,
+                            color = Color.White.copy(alpha = 0.7f)
+                        )
+                        Spacer(modifier = Modifier.height(15.dp))
+
+                        Button(
+                            onClick = { startNewRound() },
+                            contentPadding = PaddingValues(
+                                horizontal = 40.dp,
+                                vertical = 10.dp
+                            )
+                        ) {
+                            Text(
+                                text = "Начать игру",
+                                fontSize = 27.sp
+                            )
+                        }
+                    }
+                }
             }
 
-            BoxWithConstraints(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .clickable(
-                        enabled = gameActive,
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = {
-                            misses++
-                            score = (score - 1).coerceAtLeast(0)
-                        }
-                    )
-            ) {
-                val screenWidth = maxWidth
-                val screenHeight = maxHeight
+            GameStatus.PLAYING -> { }
 
-                fun logicalToScreenX(x: Float): Float {
-                    return with(density) { x / logicalFieldSize * screenWidth.toPx() }
-                }
-
-                fun logicalToScreenY(y: Float): Float {
-                    return with(density) { y / logicalFieldSize * screenHeight.toPx() }
-                }
-
-                bugs.forEach { bug ->
-                    Image(
-                        painter = painterResource(id = bug.imageRes),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(bugSize)
-                            .offset {
-                                IntOffset(
-                                    logicalToScreenX(bug.x).roundToInt(),
-                                    logicalToScreenY(bug.y).roundToInt()
-                                )
-                            }
-                            .clickable(
-                                enabled = gameActive,
-                                interactionSource = remember {
-                                    MutableInteractionSource()
-                                },
-                                indication = null,
-                                onClick = {
-                                    hits++
-                                    score += bug.points
-
-                                    val index = bugs.indexOfFirst { it.id == bug.id }
-
-                                    if (index != -1) {
-                                        fallingBugIds.remove(bug.id)
-                                        bugs[index] = bug.copy(
-                                            x = Random.nextFloat() * (logicalFieldSize - logicalBugSize),
-                                            y = Random.nextFloat() * (logicalFieldSize - logicalBugSize)
-                                        )
-                                    }
-                                }
-                            )
-                    )
-                }
-                if (goldBugVisible && gameActive) {
-                    Image(
-                        painter = painterResource(R.drawable.gold_bug),
-                        contentDescription = "Золотой таракан",
-                        modifier = Modifier
-                            .size(bugSize)
-                            .offset {
-                                IntOffset(
-                                    logicalToScreenX(goldBugX).roundToInt(),
-                                    logicalToScreenY(goldBugY).roundToInt()
-                                )
-                            }
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null,
-                                onClick = {
-                                    goldBugVisible = false
-                                    val bonusPoints = (goldPrice / 1000f).roundToInt()
-                                    bonusScore += bonusPoints
-                                    hits++
-                                }
-                            )
-                    )
-                }
-
-                if (bonusVisible && gameActive) {
+            GameStatus.PAUSED -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.7f)),
+                    contentAlignment = Alignment.Center
+                ) {
                     Column(
-                        modifier = Modifier.offset {
-                            IntOffset(
-                                x = with(density) { (screenWidth * bonusX - 60.dp).roundToPx() },
-                                y = with(density) { (screenHeight * bonusY).roundToPx() }
-                            )
-                        }
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null
-                            ) {
-                                bonusVisible = false
-                                tiltActive = true
-
-                                bugs.forEach { fallingBugIds.add(it.id) }
-                                playBeetleScream(context)
-                            }
-                            .padding(16.dp),
+                        modifier = Modifier.width(270.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Image(
-                            painter = painterResource(R.drawable.bonus),
-                            contentDescription = "Бонус наклона",
-                            modifier = Modifier.size(75.dp)
+                        Text(
+                            text = "Пауза",
+                            fontSize = 40.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
                         )
+                        Spacer(modifier = Modifier.height(80.dp))
+
+                        Button(
+                            onClick = { status = GameStatus.PLAYING },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "Продолжить",
+                                fontSize = 27.sp
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(15.dp))
+
+                        Button(
+                            onClick = { status = GameStatus.FINISHED },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "Завершить игру",
+                                fontSize = 27.sp
+                            )
+                        }
                     }
                 }
             }
-        }
 
-        if (!gameActive) {
-            Box(
-                modifier = Modifier.fillMaxSize()
-            ) {
+            GameStatus.FINISHED -> {
                 Image(
                     painter = painterResource(R.drawable.back_gameover2),
                     contentDescription = null,
                     contentScale = ContentScale.FillBounds,
                     modifier = Modifier.fillMaxSize()
                 )
-
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .offset(y = (-50).dp),
+                        .padding(horizontal = 20.dp)
+                        .padding(bottom = 45.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
@@ -617,32 +295,30 @@ fun GameScreen(
                     Spacer(modifier = Modifier.height(30.dp))
 
                     Text(
-                        text = "очки: $score + $bonusScore",
+                        text = "очки: ${session.score.intValue} + ${session.bonusScore.intValue}",
                         fontSize = 25.sp,
                         fontWeight = FontWeight.Bold,
                         color = Green
                     )
-
                     Text(
-                        text = "попадания: $hits",
+                        text = "попадания: ${session.hits.intValue}",
                         fontSize = 25.sp,
                         color = Green
                     )
-
                     Text(
-                        text = "промахи: $misses",
+                        text = "промахи: ${session.misses.intValue}",
                         fontSize = 25.sp,
                         color = Green
                     )
-
+                    val hits = session.hits.intValue
+                    val misses = session.misses.intValue
                     val accuracy = if (hits + misses > 0) {
                         hits.toFloat() / (hits + misses) * 100f
                     } else {
                         0f
                     }
-
                     Text(
-                        text = String.format(
+                        String.format(
                             Locale.current.platformLocale,
                             "точность: %.1f%%",
                             accuracy
@@ -650,29 +326,58 @@ fun GameScreen(
                         fontSize = 25.sp,
                         color = Green
                     )
-                    Spacer(modifier = Modifier.height(40.dp))
+                    Spacer(modifier = Modifier.height(30.dp))
 
-                    Button(
-                        onClick = {
-                            score = 0
-                            bonusScore = 0
-                            hits = 0
-                            misses = 0
-                            remainingSeconds = roundDuration * 60
-                            bonusVisible = false
-                            tiltActive = false
-                            goldBugVisible = false
-                            tiltX = 0f
-                            tiltY = 0f
-                            gameActive = true
-                            fallingBugIds.clear()
-                            createBugs()
-                        }
+                    Text(
+                        text = "Продолжить?",
+                        fontSize = 20.sp,
+                        color = Green
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "Играть снова",
-                            fontSize = 30.sp
-                        )
+                        Button(
+                            onClick = {
+                                session.reset(activeRoundDuration * 60)
+                                status = GameStatus.PLAYING
+                            },
+                            contentPadding = PaddingValues(
+                                horizontal = 30.dp,
+                                vertical = 10.dp
+                            )
+                        ) {
+                            Text(
+                                text = "Да",
+                                fontSize = 25.sp
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(25.dp))
+
+                        OutlinedButton(
+                            onClick = {
+                                status = GameStatus.READY
+                            },
+                            contentPadding = PaddingValues(
+                                horizontal = 30.dp,
+                                vertical = 10.dp
+                            ),
+                            border = androidx.compose.foundation.BorderStroke(
+                                1.5.dp,
+                                MaterialTheme.colorScheme.primary
+                            )
+                        ) {
+                            Text(
+                                text = "Нет",
+                                fontSize = 25.sp,
+                                color = Green
+                            )
+                        }
                     }
                 }
             }

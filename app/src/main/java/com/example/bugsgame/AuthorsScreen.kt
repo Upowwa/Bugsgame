@@ -75,17 +75,7 @@ fun AuthorsScreen() {
                             orientation = LinearLayout.VERTICAL
                             gravity = Gravity.CENTER_HORIZONTAL
 
-                            setPadding(0, dp(40), 0, 10)
-
-                            alpha = 0f
-                            translationY = dp(30).toFloat()
-
-                            animate()
-                                .alpha(1f)
-                                .translationY(0f)
-                                .setDuration(600)
-                                .setStartDelay((position * 200).toLong())
-                                .start()
+                            setPadding(0, dp(30), 0, 30)
                         }
 
                         val imageContainer = FrameLayout(context).apply {

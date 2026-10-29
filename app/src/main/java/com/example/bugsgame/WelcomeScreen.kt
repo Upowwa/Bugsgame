@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bugsgame.ui.theme.Green
@@ -57,7 +58,7 @@ fun WelcomeScreen(
 
             Text(
                 text = "Выберите, как хотите продолжить",
-                fontSize = 18.sp,
+                fontSize = 16.sp,
                 color = Green
             )
             Spacer(modifier = Modifier.height(15.dp))
@@ -83,6 +84,7 @@ fun WelcomeScreen(
             ) {
                 Text(
                     text = "Существующий игрок",
+                    textAlign = TextAlign.Center,
                     fontSize = 22.sp,
                     color = Green
                 )

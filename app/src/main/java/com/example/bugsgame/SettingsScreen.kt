@@ -49,7 +49,7 @@ fun SettingsScreen() {
             Spacer(modifier = Modifier.height(10.dp))
             Text(
                 text = "${stringResource(R.string.game_speed)}: ${gameSpeed.toInt()}",
-                fontSize = 18.sp,
+                fontSize = 20.sp,
                 color = Green
             )
 
@@ -68,7 +68,7 @@ fun SettingsScreen() {
             Spacer(modifier = Modifier.height(25.dp))
             Text(
                 text = "${stringResource(R.string.max_num_beetles)}: ${maxBeetles.toInt()}",
-                fontSize = 18.sp,
+                fontSize = 20.sp,
                 color = Green
             )
 
@@ -87,7 +87,7 @@ fun SettingsScreen() {
             Spacer(modifier = Modifier.height(25.dp))
             Text(
                 text = "${stringResource(R.string.bonus_interval)}: ${bonusInterval.toInt()} (сек)",
-                fontSize = 18.sp,
+                fontSize = 20.sp,
                 color = Green
             )
 
@@ -98,15 +98,15 @@ fun SettingsScreen() {
                     bonusInterval = it
                     GameSettings.saveBonusInterval(context, it)
                 },
-                valueRange = 20f..40f,
-                steps = 3,
+                valueRange = 10f..40f,
+                steps = 5,
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(25.dp))
             Text(
                 text = "${stringResource(R.string.round_duration)}: ${roundDuration.toInt()} (мин)",
-                fontSize = 18.sp,
+                fontSize = 20.sp,
                 color = Green
             )
 

@@ -19,7 +19,7 @@ fun RulesScreen() {
             painter = painterResource(R.drawable.back_rules),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.FillBounds
+            contentScale = ContentScale.Crop
         )
 
         AndroidView(
