@@ -27,7 +27,7 @@ fun RulesScreen() {
             factory = { context ->
                 WebView(context).apply {
                     setBackgroundColor(android.graphics.Color.TRANSPARENT)
-                    loadUrl("file:///android_res/raw/game_rules.html")
+                    loadUrl("file:///android_asset/game_rules.html")
                 }
             }
         )

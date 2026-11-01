@@ -39,6 +39,7 @@ import com.example.bugsgame.ui.theme.Green
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.mutableLongStateOf
 
 class GameSessionState(
     initialSeconds: Int
@@ -48,7 +49,9 @@ class GameSessionState(
     val hits = mutableIntStateOf(0)
     val misses = mutableIntStateOf(0)
     val remainingSeconds = mutableIntStateOf(initialSeconds)
-
+    val bonusRemainingMillis = mutableLongStateOf(0L)
+    val goldBugRemainingMillis = mutableLongStateOf(20_000L)
+    var tiltRemainingMillis = mutableLongStateOf(5_000L)
     val bugs = mutableStateListOf<Bug>()
     val fallingBugIds = mutableStateListOf<Int>()
     val resetVersion = mutableIntStateOf(0)
@@ -87,6 +90,9 @@ class GameSessionState(
         goldBugDx.floatValue = 1f
         goldBugDy.floatValue = 1f
         resetVersion.intValue++
+        bonusRemainingMillis.longValue = 0L
+        goldBugRemainingMillis.longValue = 20_000L
+        tiltRemainingMillis.longValue = 5_000L
     }
 }
 
@@ -106,9 +112,7 @@ fun GameScreen(
     val gameSessionViewModel: GameSessionViewModel = koinViewModel()
     val session = gameSessionViewModel.session
     gameSessionViewModel.configureInitialDuration(activeRoundDuration * 60)
-    var status by androidx.compose.runtime.saveable.rememberSaveable {
-        mutableStateOf(GameStatus.READY)
-    }
+    var status by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(GameStatus.READY) }
 
     fun startNewRound() {
         val newRoundDuration = GameSettings.getRoundDuration(context).toInt()

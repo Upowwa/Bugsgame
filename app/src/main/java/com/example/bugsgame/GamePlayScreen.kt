@@ -23,7 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
@@ -93,13 +92,11 @@ fun GamePlayScreen(
     var goldBugDx by state.goldBugDx
     var goldBugDy by state.goldBugDy
 
-    val sensorManager = remember { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
+    val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     val accelerometer = remember { sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) }
 
     val bugs = state.bugs
     val fallingBugIds = state.fallingBugIds
-
-    var tiltRemainingMillis by remember { mutableLongStateOf(5_000L) }
 
     fun createBugs() {
         bugs.clear()
@@ -162,21 +159,32 @@ fun GamePlayScreen(
         }
     }
 
-    LaunchedEffect(isPlaying) {
+    LaunchedEffect(isPlaying, bonusInterval) {
         if (isPlaying) {
             while (true) {
                 if (!bonusVisible) {
-                    delay(bonusInterval.toLong().seconds)
+                    if (state.bonusRemainingMillis.longValue <= 0L) {
+                        state.bonusRemainingMillis.longValue = bonusInterval * 1000L
+                    }
+                    while (state.bonusRemainingMillis.longValue > 0L) {
+                        val step = minOf(
+                            100L,
+                            state.bonusRemainingMillis.longValue
+                        )
+                        delay(step.milliseconds)
 
+                        state.bonusRemainingMillis.longValue -= step
+                    }
                     if (!tiltActive) {
                         bonusX = Random.nextFloat() * 0.7f + 0.15f
                         bonusY = -0.15f
                         bonusVisible = true
+                        state.bonusRemainingMillis.longValue = bonusInterval * 1000L
                     } else {
+                        state.bonusRemainingMillis.longValue = bonusInterval * 1000L
                         continue
                     }
                 }
-
                 while (bonusVisible && bonusY < 1.15f) {
                     withFrameNanos { }
                     bonusY += 0.003f
@@ -186,11 +194,18 @@ fun GamePlayScreen(
         }
     }
 
-
     LaunchedEffect(isPlaying) {
-        if (isPlaying) {
-            while (true) {
-                delay(20.seconds)
+        while (isPlaying) {
+            if (!goldBugVisible) {
+                while (state.goldBugRemainingMillis.longValue > 0L) {
+                    val step = minOf(
+                        100L,
+                        state.goldBugRemainingMillis.longValue
+                    )
+                    delay(step.milliseconds)
+                    state.goldBugRemainingMillis.longValue -= step
+                }
+
                 goldBugX = Random.nextFloat() * (logicalFieldSize - logicalBugSize)
                 goldBugY = Random.nextFloat() * (logicalFieldSize - logicalBugSize)
 
@@ -198,12 +213,30 @@ fun GamePlayScreen(
                 goldBugDy = if (Random.nextBoolean()) 1f else -1f
 
                 goldBugVisible = true
+                state.goldBugRemainingMillis.longValue = 5_000L
+            }
 
-                delay(5.seconds)
+            while (goldBugVisible &&
+                state.goldBugRemainingMillis.longValue > 0L
+            ) {
+                val step = minOf(
+                    100L,
+                    state.goldBugRemainingMillis.longValue
+                )
+                delay(step.milliseconds)
+                state.goldBugRemainingMillis.longValue -= step
+            }
+            if (goldBugVisible &&
+                state.goldBugRemainingMillis.longValue <= 0L
+            ) {
                 goldBugVisible = false
+            }
+            if (!goldBugVisible) {
+                state.goldBugRemainingMillis.longValue = 20_000L
             }
         }
     }
+
     LaunchedEffect(goldBugVisible, isPlaying) {
         var previousFrameTime = 0L
         while (goldBugVisible && isPlaying) {
@@ -236,6 +269,7 @@ fun GamePlayScreen(
             goldBugY = newY
         }
     }
+
     DisposableEffect(tiltActive, isPlaying, accelerometer) {
         if (tiltActive && isPlaying && accelerometer != null) {
             val listener = object : SensorEventListener {
@@ -258,10 +292,14 @@ fun GamePlayScreen(
 
     LaunchedEffect(tiltActive, isPlaying) {
         if (tiltActive && isPlaying) {
-            while (tiltRemainingMillis > 0L) {
-                val step = minOf(100L, tiltRemainingMillis)
+            while (state.tiltRemainingMillis.longValue > 0L) {
+                val step = minOf(
+                    100L,
+                    state.tiltRemainingMillis.longValue
+                )
+
                 delay(step.milliseconds)
-                tiltRemainingMillis -= step
+                state.tiltRemainingMillis.longValue -= step
             }
             tiltActive = false
             tiltX = 0f
@@ -338,7 +376,6 @@ fun GamePlayScreen(
             }
         }
     }
-
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -507,7 +544,7 @@ fun GamePlayScreen(
                                 indication = null
                             ) {
                                 bonusVisible = false
-                                tiltRemainingMillis = 5_000L
+                                state.tiltRemainingMillis.longValue = 5_000L
                                 tiltActive = true
 
                                 bugs.forEach { fallingBugIds.add(it.id) }
