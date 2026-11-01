@@ -3,8 +3,8 @@ package com.example.bugsgame
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 
 private enum class AppScreen {
     WELCOME,
@@ -15,8 +15,8 @@ private enum class AppScreen {
 
 @Composable
 fun AppNavigation() {
-    var currentScreen by remember { mutableStateOf(AppScreen.WELCOME) }
-    var selectedPlayer by remember { mutableStateOf<Player?>(null) }
+    var currentScreen by rememberSaveable { mutableStateOf(AppScreen.WELCOME) }
+    var selectedPlayer by rememberSaveable { mutableStateOf<Player?>(null) }
 
     when (currentScreen) {
         AppScreen.WELCOME -> {

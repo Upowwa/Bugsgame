@@ -23,6 +23,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -102,8 +103,12 @@ fun GameScreen(
     var activeGameSpeed by remember { mutableIntStateOf(GameSettings.getGameSpeed(context).toInt()) }
     var activeMaxBeetles by remember { mutableIntStateOf(GameSettings.getMaxBeetles(context).toInt()) }
     var activeBonusInterval by remember { mutableIntStateOf(GameSettings.getBonusInterval(context).toInt()) }
-    val session = remember { GameSessionState(activeRoundDuration * 60) }
-    var status by remember { mutableStateOf(GameStatus.READY) }
+    val gameSessionViewModel: GameSessionViewModel = koinViewModel()
+    val session = gameSessionViewModel.session
+    gameSessionViewModel.configureInitialDuration(activeRoundDuration * 60)
+    var status by androidx.compose.runtime.saveable.rememberSaveable {
+        mutableStateOf(GameStatus.READY)
+    }
 
     fun startNewRound() {
         val newRoundDuration = GameSettings.getRoundDuration(context).toInt()

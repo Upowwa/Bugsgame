@@ -7,4 +7,4 @@ data class Player(
     val birthDate: String,
     val zodiac: String,
     val id: Int = 0
-)
+) : java.io.Serializable
