@@ -38,6 +38,8 @@ android {
 
 dependencies {
     implementation(platform(libs.koin.bom))
+    implementation(libs.androidx.compose.runtime)
+    implementation(libs.androidx.compose.runtime.saveable)
     implementation(libs.koin.android)
     implementation(libs.koin.compose.viewmodel)
     implementation(platform(libs.androidx.compose.bom))

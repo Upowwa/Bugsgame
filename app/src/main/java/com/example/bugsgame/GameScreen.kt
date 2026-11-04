@@ -40,6 +40,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.saveable.rememberSaveable
 
 class GameSessionState(
     initialSeconds: Int
@@ -97,6 +100,7 @@ class GameSessionState(
 }
 
 private enum class GameStatus { READY, PLAYING, PAUSED, FINISHED }
+private enum class GameOverlay { NONE, RULES, SETTINGS }
 
 @Composable
 fun GameScreen(
@@ -113,6 +117,7 @@ fun GameScreen(
     val session = gameSessionViewModel.session
     gameSessionViewModel.configureInitialDuration(activeRoundDuration * 60)
     var status by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(GameStatus.READY) }
+    var currentOverlay by rememberSaveable { mutableStateOf(GameOverlay.NONE) }
 
     fun startNewRound() {
         val newRoundDuration = GameSettings.getRoundDuration(context).toInt()
@@ -229,6 +234,35 @@ fun GameScreen(
                             Text(
                                 text = "Начать игру",
                                 fontSize = 27.sp
+                            )
+                        }
+                    }
+                    if (currentOverlay == GameOverlay.NONE) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .align(Alignment.TopCenter)
+                                .padding(horizontal = 25.dp, vertical = 25.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Image(
+                                painter = painterResource(R.drawable.rules),
+                                contentDescription = "Правила",
+                                modifier = Modifier
+                                    .size(27.dp)
+                                    .clickable {
+                                        currentOverlay = GameOverlay.RULES
+                                    }
+                            )
+                            Image(
+                                painter = painterResource(R.drawable.settings),
+                                contentDescription = "Настройки",
+                                modifier = Modifier
+                                    .size(27.dp)
+                                    .clickable {
+                                        currentOverlay = GameOverlay.SETTINGS
+                                    }
                             )
                         }
                     }
@@ -390,6 +424,18 @@ fun GameScreen(
                     }
                 }
             }
+        }
+
+        when (currentOverlay) {
+            GameOverlay.RULES -> RulesScreen(
+                onBack = { currentOverlay = GameOverlay.NONE }
+            )
+
+            GameOverlay.SETTINGS -> SettingsScreen(
+                onBack = { currentOverlay = GameOverlay.NONE }
+            )
+
+            GameOverlay.NONE -> {}
         }
     }
 }

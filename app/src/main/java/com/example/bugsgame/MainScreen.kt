@@ -27,7 +27,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 
 @Composable
 fun MainScreen(player: Player, onChangePlayer: () -> Unit) {
-    val pagerState = rememberPagerState(pageCount = { 6 })
+    val pagerState = rememberPagerState(pageCount = { 5 })
     val coroutineScope = rememberCoroutineScope()
     var isGameActive by rememberSaveable { mutableStateOf(false) }
     val activity = LocalActivity.current
@@ -42,11 +42,10 @@ fun MainScreen(player: Player, onChangePlayer: () -> Unit) {
 
     val tabs = listOf(
         Pair(R.drawable.registration, R.drawable.registration_selected),
-        Pair(R.drawable.rules, R.drawable.rules_selected),
+        Pair(R.drawable.store, R.drawable.store_selected),
         Pair(R.drawable.game, R.drawable.game_selected),
         Pair(R.drawable.records, R.drawable.records_selected),
-        Pair(R.drawable.authors, R.drawable.authors_selected),
-        Pair(R.drawable.settings, R.drawable.settings_selected)
+        Pair(R.drawable.authors, R.drawable.authors_selected)
     )
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -71,8 +70,8 @@ fun MainScreen(player: Player, onChangePlayer: () -> Unit) {
                                 contentDescription = null,
                                 modifier = Modifier
                                     .padding(vertical = 7.dp)
-                                    .width(25.dp)
-                                    .height(25.dp)
+                                    .width(30.dp)
+                                    .height(30.dp)
                             )
                         }
                     )
@@ -93,14 +92,13 @@ fun MainScreen(player: Player, onChangePlayer: () -> Unit) {
                     player = player,
                     onChangePlayer = onChangePlayer
                 )
-                1 -> RulesScreen()
+                1 -> ShopScreen()
                 2 -> GameScreen(
                     playerId = player.id,
                     onGameActiveChange = { active -> isGameActive = active }
                 )
                 3 -> RecordsScreen()
                 4 -> AuthorsScreen()
-                5 -> SettingsScreen()
             }
         }
     }

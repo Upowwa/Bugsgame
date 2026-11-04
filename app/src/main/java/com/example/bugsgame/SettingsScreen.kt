@@ -24,9 +24,12 @@ import androidx.compose.ui.unit.sp
 import com.example.bugsgame.ui.theme.Green
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.size
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     var gameSpeed by rememberSaveable { mutableFloatStateOf(GameSettings.getGameSpeed(context)) }
     var maxBeetles by rememberSaveable { mutableFloatStateOf(GameSettings.getMaxBeetles(context)) }
@@ -46,7 +49,6 @@ fun SettingsScreen() {
                 .padding(25.dp),
             verticalArrangement = Arrangement.Top
         ) {
-            Spacer(modifier = Modifier.height(10.dp))
             Text(
                 text = "${stringResource(R.string.game_speed)}: ${gameSpeed.toInt()}",
                 fontSize = 20.sp,
@@ -122,6 +124,15 @@ fun SettingsScreen() {
                 modifier = Modifier.fillMaxWidth()
             )
         }
+        Image(
+            painter = painterResource(R.drawable.back_icon),
+            contentDescription = "Назад",
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(25.dp)
+                .size(20.dp)
+                .clickable { onBack() }
+        )
     }
 }
 
