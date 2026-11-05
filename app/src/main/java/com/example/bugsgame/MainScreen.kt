@@ -92,7 +92,7 @@ fun MainScreen(player: Player, onChangePlayer: () -> Unit) {
                     player = player,
                     onChangePlayer = onChangePlayer
                 )
-                1 -> ShopScreen()
+                1 -> ShopScreen(playerId = player.id)
                 2 -> GameScreen(
                     playerId = player.id,
                     onGameActiveChange = { active -> isGameActive = active }

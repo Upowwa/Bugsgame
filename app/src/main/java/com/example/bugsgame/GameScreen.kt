@@ -43,6 +43,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.room.withTransaction
 
 class GameSessionState(
     initialSeconds: Int
@@ -117,6 +118,7 @@ fun GameScreen(
     val session = gameSessionViewModel.session
     gameSessionViewModel.configureInitialDuration(activeRoundDuration * 60)
     var status by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(GameStatus.READY) }
+    var rewardSaved by rememberSaveable { mutableStateOf(false) }
     var currentOverlay by rememberSaveable { mutableStateOf(GameOverlay.NONE) }
 
     fun startNewRound() {
@@ -127,6 +129,7 @@ fun GameScreen(
         activeMaxBeetles = GameSettings.getMaxBeetles(context).toInt()
         activeBonusInterval = GameSettings.getBonusInterval(context).toInt()
 
+        rewardSaved = false
         session.reset(newRoundDuration * 60)
         status = GameStatus.PLAYING
     }
@@ -136,7 +139,7 @@ fun GameScreen(
     }
 
     LaunchedEffect(status) {
-        if (status == GameStatus.FINISHED) {
+        if (status == GameStatus.FINISHED && !rewardSaved) {
             val hits = session.hits.intValue
             val misses = session.misses.intValue
             val accuracy = if (hits + misses > 0) {
@@ -144,16 +147,29 @@ fun GameScreen(
             } else {
                 0f
             }
-            database.gameResultDao().insert(
-                GameResultEntity(
-                    playerId = playerId,
-                    score = session.score.intValue + session.bonusScore.intValue,
-                    hits = hits,
-                    misses = misses,
-                    accuracy = accuracy,
-                    gameSpeed = activeGameSpeed
+
+            val ordinaryCoins = (session.score.intValue * accuracy / 1000f).toInt()
+            val goldCoins = session.bonusScore.intValue
+            val totalCoins = ordinaryCoins + goldCoins
+
+            database.withTransaction {
+
+                database.gameResultDao().insert(
+                    GameResultEntity(
+                        playerId = playerId,
+                        score = session.score.intValue + session.bonusScore.intValue,
+                        hits = hits,
+                        misses = misses,
+                        accuracy = accuracy,
+                        gameSpeed = activeGameSpeed
+                    )
                 )
-            )
+                database.playerDao().addCoins(
+                    playerId = playerId,
+                    amount = totalCoins
+                )
+            }
+            rewardSaved = true
         }
     }
 
@@ -360,6 +376,9 @@ fun GameScreen(
                     } else {
                         0f
                     }
+                    val ordinaryCoins = (session.score.intValue * accuracy / 1000f).toInt()
+                    val goldCoins = session.bonusScore.intValue
+                    val totalCoins = ordinaryCoins + goldCoins
                     Text(
                         String.format(
                             Locale.current.platformLocale,
@@ -371,12 +390,30 @@ fun GameScreen(
                     )
                     Spacer(modifier = Modifier.height(30.dp))
 
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Начислено: $totalCoins",
+                            fontSize = 25.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Green
+                        )
+                        Spacer(modifier = Modifier.width(7.dp))
+                        Image(
+                            painter = painterResource(R.drawable.coins),
+                            contentDescription = "Монеты",
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+
                     Text(
                         text = "Продолжить?",
-                        fontSize = 20.sp,
+                        fontSize = 18.sp,
                         color = Green
                     )
-
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Row(
@@ -386,6 +423,7 @@ fun GameScreen(
                     ) {
                         Button(
                             onClick = {
+                                rewardSaved = false
                                 session.reset(activeRoundDuration * 60)
                                 status = GameStatus.PLAYING
                             },
