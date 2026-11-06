@@ -36,6 +36,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.res.stringResource
 
 private data class RecordRow(
     val playerName: String,
@@ -102,13 +103,13 @@ fun RecordsScreen() {
 
                 Column {
                     Text(
-                        text = "Рекорды",
+                        text = stringResource(R.string.records),
                         fontSize = 30.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "Лучшие результаты игроков",
+                        text = stringResource(R.string.best_player_res),
                         fontSize = 15.sp,
                         color = Green
                     )
@@ -117,7 +118,7 @@ fun RecordsScreen() {
             Spacer(modifier = Modifier.width(10.dp))
             Spacer(modifier = Modifier.padding(15.dp))
             Text(
-                text = "Скорость игры",
+                text = stringResource(R.string.game_speed),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary

@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -41,7 +42,7 @@ fun WelcomeScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "BugsGame",
+                text = stringResource(R.string.app_name),
                 fontSize = 45.sp,
                 fontWeight = FontWeight.Bold,
                 color = Green
@@ -49,7 +50,7 @@ fun WelcomeScreen(
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
-                text = "Добро пожаловать!",
+                text = stringResource(R.string.app_greeting),
                 fontSize = 27.sp,
                 fontWeight = FontWeight.Bold,
                 color = Green
@@ -68,7 +69,7 @@ fun WelcomeScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "Новый игрок",
+                    text = stringResource(R.string.new_player),
                     fontSize = 22.sp
                 )
             }
@@ -83,7 +84,7 @@ fun WelcomeScreen(
                 )
             ) {
                 Text(
-                    text = "Существующий игрок",
+                    text = stringResource(R.string.existing_player),
                     textAlign = TextAlign.Center,
                     fontSize = 22.sp,
                     color = Green

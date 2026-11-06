@@ -36,6 +36,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 
 @Composable
 fun PlayerSelectionScreen(
@@ -69,7 +70,7 @@ fun PlayerSelectionScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "Выбор игрока",
+                text = stringResource(R.string.choose_player),
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Bold,
                 color = Green
@@ -146,7 +147,7 @@ fun PlayerSelectionScreen(
                 )
             ) {
                 Text(
-                    text = "Назад",
+                    text = stringResource(R.string.back_btn),
                     color = Green,
                     fontSize = 22.sp
                 )

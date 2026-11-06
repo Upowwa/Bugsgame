@@ -92,7 +92,7 @@ fun PlayerInfoScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "Сменить игрока",
+                    text = stringResource(R.string.change_player),
                     fontSize = 20.sp
                 )
             }

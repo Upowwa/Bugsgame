@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">BugsGame</string>
+    <string name="app_greeting">Добро пожаловать!</string>
+    <string name="new_player">Новый игрок</string>
+    <string name="existing_player">Существующий игрок</string>
 
     <string name="registration_title">Регистрация игрока</string>
     <string name="full_name">ФИО</string>
@@ -12,6 +15,19 @@
     <string name="register">Зарегистрировать</string>
     <string name="zodiac_sign">Знак зодиака</string>
     <string name="player_result">Данные игрока:\n\nФИО: %1$s\nПол: %2$s\nКурс: %3$s\nДата рождения: %4$s\nЗнак зодиака: %5$s</string>
+    <string name="back_btn">Назад</string>
+
+    <string name="choose_player">Выбор игрока</string>
+    <string name="change_player">Сменить игрока</string>
+    <string name="records">Рекорды</string>
+    <string name="best_player_res">Лучшие результаты игроков</string>
+    <string name="start_game">Начать игру</string>
+    <string name="pause">Пауза</string>
+    <string name="resume">Продолжить</string>
+    <string name="end_game">Завершить игру</string>
+    <string name="game_over">Игра окончена!</string>
+    <string name="yes_btn">Да</string>
+    <string name="no_btn">Нет</string>
 
     <string name="game_speed">Скорость игры</string>
     <string name="max_num_beetles">Максимальное количество тараканов</string>
@@ -22,4 +38,15 @@
     <string name="gold_widget_description">Курс золота ЦБ РФ</string>
     <string name="gold_widget_title">ЗОЛОТО ЦБ</string>
     <string name="gold_widget_per_gram">за грамм</string>
+
+    <string name="shop_wardrobe">Гардероб</string>
+    <string name="shop_interior">Интерьер</string>
+    <string name="shop_category_top">Верх</string>
+    <string name="shop_category_bottom">Низ</string>
+    <string name="shop_category_hats">Шляпы</string>
+    <string name="shop_category_accessories">Аксессуары</string>
+    <string name="shop_category_shoes">Обувь</string>
+    <string name="shop_category_face">Выражение лица</string>
+    <string name="shop_select">Выбрать</string>
+    <string name="shop_remove">Снять</string>
 </resources>

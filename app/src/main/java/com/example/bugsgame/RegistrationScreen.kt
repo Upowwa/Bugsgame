@@ -312,7 +312,7 @@ fun RegistrationScreen(
                 )
             ) {
                 Text(
-                    text = "Назад",
+                    text = stringResource(R.string.back_btn),
                     fontSize = 20.sp,
                     color = Green
                 )

@@ -43,6 +43,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.res.stringResource
 import androidx.room.withTransaction
 
 class GameSessionState(
@@ -216,7 +217,7 @@ fun GameScreen(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = "BugsGame",
+                            text = stringResource(R.string.app_name),
                             fontSize = 50.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -248,7 +249,7 @@ fun GameScreen(
                             )
                         ) {
                             Text(
-                                text = "Начать игру",
+                                text = stringResource(R.string.start_game),
                                 fontSize = 27.sp
                             )
                         }
@@ -299,7 +300,7 @@ fun GameScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Пауза",
+                            text = stringResource(R.string.pause),
                             fontSize = 40.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -311,7 +312,7 @@ fun GameScreen(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = "Продолжить",
+                                text = stringResource(R.string.resume),
                                 fontSize = 27.sp
                             )
                         }
@@ -322,7 +323,7 @@ fun GameScreen(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = "Завершить игру",
+                                text = stringResource(R.string.end_game),
                                 fontSize = 27.sp
                             )
                         }
@@ -346,7 +347,7 @@ fun GameScreen(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = "Игра окончена!",
+                        text = stringResource(R.string.game_over),
                         fontSize = 40.sp,
                         fontWeight = FontWeight.Bold,
                         color = Green
@@ -410,7 +411,7 @@ fun GameScreen(
                     Spacer(modifier = Modifier.height(4.dp))
 
                     Text(
-                        text = "Продолжить?",
+                        text = stringResource(R.string.resume) + "?",
                         fontSize = 18.sp,
                         color = Green
                     )
@@ -433,7 +434,7 @@ fun GameScreen(
                             )
                         ) {
                             Text(
-                                text = "Да",
+                                text = stringResource(R.string.yes_btn),
                                 fontSize = 25.sp
                             )
                         }
@@ -454,7 +455,7 @@ fun GameScreen(
                             )
                         ) {
                             Text(
-                                text = "Нет",
+                                text = stringResource(R.string.no_btn),
                                 fontSize = 25.sp,
                                 color = Green
                             )
