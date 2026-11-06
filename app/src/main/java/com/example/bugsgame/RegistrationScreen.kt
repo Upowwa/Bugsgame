@@ -292,6 +292,7 @@ fun RegistrationScreen(
                                 zodiac = newPlayer.zodiac
                             )
                         ).toInt()
+                        ShopRepository(database).initializeShop(playerId)
                         onPlayerSelected(newPlayer.copy(id = playerId))
                     }
                 },
