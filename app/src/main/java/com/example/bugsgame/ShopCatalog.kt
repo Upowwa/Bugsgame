@@ -34,24 +34,40 @@ object ShopCatalog {
 
         ShopCatalogItem(
             ShopCategories.FACE,
-            ShopItem("Улыбка", 1, R.drawable.face_smile)
+            ShopItem("Улыбка", 1, R.drawable.smile_icon)
         ),
         ShopCatalogItem(
             ShopCategories.FACE,
-            ShopItem("Радость", 1, R.drawable.face_grin)
+            ShopItem("Радость", 1, R.drawable.grin_icon)
         ),
         ShopCatalogItem(
             ShopCategories.FACE,
-            ShopItem("Спокойствие", 1, R.drawable.face_neutral)
+            ShopItem("Спокойствие", 1, R.drawable.neutral_icon)
         ),
         ShopCatalogItem(
             ShopCategories.FACE,
-            ShopItem("Грусть", 0, R.drawable.face_sad)
+            ShopItem("Грусть", 0, R.drawable.sad_icon)
         ),
 
         ShopCatalogItem(
             ShopCategories.ACCESSORIES,
             ShopItem("Галстук", 1, R.drawable.shop_tie)
+        ),
+        ShopCatalogItem(
+            ShopCategories.TOP,
+            ShopItem("Синий полосатый пиджак", 1, R.drawable.blazer_icon)
+        ),
+        ShopCatalogItem(
+            ShopCategories.BOTTOM,
+            ShopItem("Офисная юбка", 1, R.drawable.office_skirt_icon)
+        ),
+        ShopCatalogItem(
+            ShopCategories.BOTTOM,
+            ShopItem("Праздничная юбка", 1, R.drawable.party_skirt_icon)
+        ),
+        ShopCatalogItem(
+            ShopCategories.SHOES,
+            ShopItem("Бордовые лоферы", 1, R.drawable.lofers_icon)
         )
     )
 

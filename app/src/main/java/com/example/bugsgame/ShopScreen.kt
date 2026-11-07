@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -194,7 +195,7 @@ fun ShopScreen(playerId: Int) {
                     )
                 }
 
-                Box(
+                BoxWithConstraints(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
@@ -208,12 +209,21 @@ fun ShopScreen(playerId: Int) {
                     )
 
                     equippedPreviewItems.forEach { catalogItem ->
-                        Image(
-                            painter = painterResource(catalogItem.item.image),
-                            contentDescription = catalogItem.item.name,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Fit
-                        )
+                        if (catalogItem.category in setOf(
+                                ShopCategories.TOP,
+                                ShopCategories.BOTTOM,
+                                ShopCategories.SHOES
+                            )
+                        ) {
+                            EquippedClothingLayer(catalogItem, maxHeight)
+                        } else {
+                            Image(
+                                painter = painterResource(catalogItem.item.image),
+                                contentDescription = catalogItem.item.name,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Fit
+                            )
+                        }
                     }
 
                     Image(
@@ -222,13 +232,13 @@ fun ShopScreen(playerId: Int) {
                                 it.category == ShopCategories.FACE && it.isEquipped
                             }?.itemName?.let { name ->
                                 ShopCatalog.findItem(ShopCategories.FACE, name)?.image
-                            } ?: R.drawable.face_sad
+                            } ?: R.drawable.sad_icon
                         ),
                         contentDescription = "Выбранное лицо",
                         modifier = Modifier
                             .size(width = 58.dp, height = 58.dp)
                             .align(Alignment.Center)
-                            .offset(y = (-18).dp),
+                            .offset(y = (-45).dp),
                         contentScale = ContentScale.Fit
                     )
                 }
