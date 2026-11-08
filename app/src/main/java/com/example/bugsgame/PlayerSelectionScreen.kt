@@ -137,9 +137,9 @@ private fun PlayerSelectionItem(
     onPlayerSelected: (Player) -> Unit,
     onDelete: () -> Unit
 ) {
-    val equippedItems by database.shopDao()
+    val equippedItemsState = database.shopDao()
         .observeItems(savedPlayer.id)
-        .collectAsState(initial = emptyList())
+        .collectAsState(initial = null as List<ShopItemEntity>?)
 
     Button(
         onClick = {
@@ -160,11 +160,19 @@ private fun PlayerSelectionItem(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            LadybugAvatar(
-                items = equippedItems.filter { it.isEquipped },
-                modifier = Modifier.size(60.dp)
-            )
-
+            if (equippedItemsState.value != null) {
+                LadybugAvatar(
+                    items = equippedItemsState.value!!.filter { it.isEquipped },
+                    modifier = Modifier.size(60.dp)
+                )
+            } else {
+                Image(
+                    painter = painterResource(R.drawable.loading),
+                    contentDescription = "Загрузка аватара",
+                    modifier = Modifier.size(35.dp),
+                    contentScale = ContentScale.Fit
+                )
+            }
             Spacer(modifier = Modifier.width(15.dp))
 
             Text(

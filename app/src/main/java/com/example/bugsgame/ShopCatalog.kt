@@ -73,10 +73,16 @@ object ShopCatalog {
             previewImage = R.drawable.bomber_icon
         ),
 
+
         ShopCatalogItem(
             category = ShopCategories.BOTTOM,
             item = ShopItem("Юбка", 0, R.drawable.skirt),
             previewImage = R.drawable.skirt_icon
+        ),
+        ShopCatalogItem(
+            category = ShopCategories.BOTTOM,
+            item = ShopItem("Джинсы", 0, R.drawable.jeans),
+            previewImage = R.drawable.jeans_icon
         ),
 
 
