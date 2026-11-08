@@ -20,4 +20,5 @@ object ShopCategories {
     const val HATS = "hats"
     const val ACCESSORIES = "accessories"
     const val SHOES = "shoes"
+    const val OTHER = "other"
 }

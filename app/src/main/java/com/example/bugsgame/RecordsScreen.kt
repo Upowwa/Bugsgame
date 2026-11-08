@@ -37,8 +37,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.res.stringResource
+import androidx.compose.runtime.collectAsState
 
 private data class RecordRow(
+    val playerId: Int,
     val playerName: String,
     val score: Int
 )
@@ -46,6 +48,7 @@ private data class RecordRow(
 @Composable
 fun RecordsScreen() {
     val context = LocalContext.current
+    val database = remember(context) { AppDatabase.getDatabase(context) }
 
     var selectedSpeed by remember { mutableIntStateOf(1) }
     var records by remember { mutableStateOf<List<RecordRow>>(emptyList()) }
@@ -56,7 +59,6 @@ fun RecordsScreen() {
         isLoading = true
         errorMessage = null
         try {
-            val database = AppDatabase.getDatabase(context)
             val results = database.gameResultDao().getTop5BySpeed(selectedSpeed)
 
             records = results.mapNotNull { result ->
@@ -64,6 +66,7 @@ fun RecordsScreen() {
 
                 player?.let {
                     RecordRow(
+                        playerId = result.playerId,
                         playerName = it.fullName,
                         score = result.score
                     )
@@ -191,59 +194,85 @@ fun RecordsScreen() {
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         itemsIndexed(records) { index, record ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(
-                                        MaterialTheme.colorScheme.surfaceVariant,
-                                        MaterialTheme.shapes.medium
-                                    )
-                                    .padding(15.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                when (index) {
-                                    0 -> Image(
-                                        painter = painterResource(id = R.drawable.first),
-                                        contentDescription = "Первое место",
-                                        modifier = Modifier.size(30.dp)
-                                    )
-                                    1 -> Image(
-                                        painter = painterResource(id = R.drawable.second),
-                                        contentDescription = "Второе место",
-                                        modifier = Modifier.size(30.dp)
-                                    )
-                                    2 -> Image(
-                                        painter = painterResource(id = R.drawable.third),
-                                        contentDescription = "Третье место",
-                                        modifier = Modifier.size(30.dp)
-                                    )
-                                    else -> Text(
-                                        text = "  ${index + 1}",
-                                        fontSize = 20.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.width(30.dp)
-                                    )
-                                }
-                                Spacer(modifier = Modifier.width(20.dp))
-
-                                Text(
-                                    text = record.playerName,
-                                    modifier = Modifier.weight(1f),
-                                    fontSize = 20.sp,
-                                    color = Green
-                                )
-                                Text(
-                                    text = "${record.score}",
-                                    fontSize = 20.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
+                            RecordRowItem(
+                                index = index,
+                                record = record,
+                                database = database
+                            )
                         }
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun RecordRowItem(
+    index: Int,
+    record: RecordRow,
+    database: AppDatabase
+) {
+    val equippedItems by database.shopDao()
+        .observeItems(record.playerId)
+        .collectAsState(initial = emptyList())
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                MaterialTheme.colorScheme.surfaceVariant,
+                MaterialTheme.shapes.medium
+            )
+            .padding(15.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        when (index) {
+            0 -> Image(
+                painter = painterResource(id = R.drawable.first),
+                contentDescription = "Первое место",
+                modifier = Modifier.size(30.dp)
+            )
+            1 -> Image(
+                painter = painterResource(id = R.drawable.second),
+                contentDescription = "Второе место",
+                modifier = Modifier.size(30.dp)
+            )
+            2 -> Image(
+                painter = painterResource(id = R.drawable.third),
+                contentDescription = "Третье место",
+                modifier = Modifier.size(30.dp)
+            )
+            else -> Text(
+                text = "  ${index + 1}",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.width(30.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.width(20.dp))
+
+        LadybugAvatar(
+            items = equippedItems.filter { it.isEquipped },
+            modifier = Modifier.size(30.dp)
+        )
+
+        Spacer(modifier = Modifier.width(15.dp))
+
+        Text(
+            text = record.playerName,
+            modifier = Modifier.weight(1f),
+            fontSize = 20.sp,
+            color = Green
+        )
+
+        Text(
+            text = "${record.score}",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
     }
 }

@@ -21,38 +21,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.bugsgame.ui.theme.Green
 import com.example.bugsgame.ui.theme.ShopBack
-
-@Composable
-fun BoxScope.EquippedClothingLayer(catalogItem: ShopCatalogItem, bugHeight: Dp) {
-    val bugWidth = bugHeight * (1230f / 1278f)
-    val (widthScale, aspectRatio, verticalPosition) = when (catalogItem.category) {
-        ShopCategories.TOP -> Triple(0.53f, 1.99f, 0.08f)
-        ShopCategories.BOTTOM -> Triple(
-            0.50f,
-            if (catalogItem.item.name == "Праздничная юбка") 2.74f else 2.99f,
-            0.25f
-        )
-        ShopCategories.SHOES -> Triple(0.42f, 3.0f, 0.43f)
-        else -> return
-    }
-    val itemWidth = bugWidth * widthScale
-
-    Image(
-        painter = painterResource(catalogItem.item.image),
-        contentDescription = catalogItem.item.name,
-        modifier = Modifier
-            .width(itemWidth)
-            .height(itemWidth / aspectRatio)
-            .align(Alignment.Center)
-            .offset(y = bugHeight * verticalPosition),
-        contentScale = ContentScale.Fit
-    )
-}
 
 @Composable
 fun ShopTabButton(
@@ -90,12 +62,13 @@ fun ShopTabButton(
 
 @Composable
 fun ShopProductCard(
-    item: ShopItem,
+    catalogItem: ShopCatalogItem,
     selected: Boolean,
     isInterior: Boolean,
     isFaceCategory: Boolean,
     onClick: () -> Unit
 ) {
+    val item = catalogItem.item
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -107,7 +80,7 @@ fun ShopProductCard(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
-            painter = painterResource(item.image),
+            painter = painterResource(catalogItem.previewImage),
             contentDescription = item.name,
             modifier = Modifier
                 .fillMaxWidth()
@@ -201,8 +174,9 @@ fun ShopProductCard(
 @Composable
 fun ShopCategoryCard(
     name: String,
+    image: Int,
     onClick: () -> Unit
-) {
+){
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -215,7 +189,7 @@ fun ShopCategoryCard(
         verticalArrangement = Arrangement.Center
     ) {
         Image(
-            painter = painterResource(R.drawable.coins),
+            painter = painterResource(image),
             contentDescription = name,
             modifier = Modifier
                 .fillMaxWidth()

@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -73,8 +71,6 @@ fun ShopScreen(playerId: Int) {
         ShopTab.WARDROBE -> category ?: ""
     }
 
-    val shopItems = ShopCatalog.getItems(currentCategoryKey)
-
     LaunchedEffect(playerId) { shopRepository.initializeShop(playerId) }
 
     fun isSelected(item: ShopItem): Boolean {
@@ -83,14 +79,19 @@ fun ShopScreen(playerId: Int) {
         }
     }
 
-    val orderedItems = shopItems
-        .map { item ->
+    val orderedItems = ShopCatalog.items
+        .filter { it.category == currentCategoryKey }
+        .map { catalogItem ->
             val savedItem = savedItems.find {
-                it.category == currentCategoryKey && it.itemName == item.name
+                it.category == currentCategoryKey && it.itemName == catalogItem.item.name
             }
-            item.copy(owned = savedItem?.isOwned == true)
+            catalogItem.copy(
+                item = catalogItem.item.copy(owned = savedItem?.isOwned == true)
+            )
         }
-        .sortedBy { item ->
+        .sortedBy { catalogItem ->
+            val item = catalogItem.item
+
             when {
                 isSelected(item) -> 0
                 item.owned -> 1
@@ -126,21 +127,19 @@ fun ShopScreen(playerId: Int) {
     }
 
     fun handleItemClick(item: ShopItem) {
-        val categoryKey = currentCategoryKey
         if (!item.owned) {
             requestPurchase(item)
             return
         }
-
         val selected = isSelected(item)
 
         coroutineScope.launch {
-            if (selected && categoryKey != ShopCategories.FACE &&
-                categoryKey != ShopCategories.BACKGROUND
+            if (selected && currentCategoryKey != ShopCategories.FACE &&
+                currentCategoryKey != ShopCategories.BACKGROUND
             ) {
-                shopRepository.unequip(playerId, categoryKey)
+                shopRepository.unequip(playerId, currentCategoryKey)
             } else {
-                shopRepository.equip(playerId, categoryKey, item.name)
+                shopRepository.equip(playerId, currentCategoryKey, item.name)
             }
         }
     }
@@ -195,7 +194,7 @@ fun ShopScreen(playerId: Int) {
                     )
                 }
 
-                BoxWithConstraints(
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
@@ -209,21 +208,12 @@ fun ShopScreen(playerId: Int) {
                     )
 
                     equippedPreviewItems.forEach { catalogItem ->
-                        if (catalogItem.category in setOf(
-                                ShopCategories.TOP,
-                                ShopCategories.BOTTOM,
-                                ShopCategories.SHOES
-                            )
-                        ) {
-                            EquippedClothingLayer(catalogItem, maxHeight)
-                        } else {
-                            Image(
-                                painter = painterResource(catalogItem.item.image),
-                                contentDescription = catalogItem.item.name,
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Fit
-                            )
-                        }
+                        Image(
+                            painter = painterResource(catalogItem.item.image),
+                            contentDescription = catalogItem.item.name,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Fit
+                        )
                     }
 
                     Image(
@@ -232,15 +222,31 @@ fun ShopScreen(playerId: Int) {
                                 it.category == ShopCategories.FACE && it.isEquipped
                             }?.itemName?.let { name ->
                                 ShopCatalog.findItem(ShopCategories.FACE, name)?.image
-                            } ?: R.drawable.sad_icon
+                            } ?: R.drawable.face_sad
                         ),
                         contentDescription = "Выбранное лицо",
-                        modifier = Modifier
-                            .size(width = 58.dp, height = 58.dp)
-                            .align(Alignment.Center)
-                            .offset(y = (-45).dp),
+                        modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Fit
                     )
+
+                    savedItems
+                        .filter {
+                            it.category == ShopCategories.OTHER && it.isEquipped
+                        }
+                        .forEach { equipped ->
+                            val catalogItem = ShopCatalog.items.find {
+                                it.category == equipped.category && it.item.name == equipped.itemName
+                            }
+
+                            catalogItem?.let {
+                                Image(
+                                    painter = painterResource(it.item.image),
+                                    contentDescription = it.item.name,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Fit
+                                )
+                            }
+                        }
                 }
             }
         }
@@ -291,13 +297,24 @@ fun ShopScreen(playerId: Int) {
                 items(categories) { (categoryKey, categoryName) ->
                     ShopCategoryCard(
                         name = categoryName,
+                        image = when (categoryKey) {
+                            ShopCategories.FACE -> R.drawable.face_smile_icon
+                            ShopCategories.TOP -> R.drawable.shirt_icon
+                            ShopCategories.BOTTOM -> R.drawable.skirt_icon
+                            ShopCategories.HATS -> R.drawable.bandana_icon
+                            ShopCategories.ACCESSORIES -> R.drawable.floral_neck_icon
+                            ShopCategories.SHOES -> R.drawable.sneakers_icon
+                            ShopCategories.OTHER -> R.drawable.coffee_icon
+                            else -> R.drawable.coins
+                        },
                         onClick = { category = categoryKey }
                     )
                 }
             } else {
-                items(orderedItems) { item ->
+                items(orderedItems) { catalogItem ->
+                    val item = catalogItem.item
                     ShopProductCard(
-                        item = item,
+                        catalogItem = catalogItem,
                         selected = isSelected(item),
                         isInterior = tab == ShopTab.INTERIOR,
                         isFaceCategory = currentCategoryKey == ShopCategories.FACE,

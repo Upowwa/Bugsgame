@@ -37,6 +37,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.foundation.layout.width
+import androidx.compose.runtime.collectAsState
 
 @Composable
 fun PlayerSelectionScreen(
@@ -93,46 +95,18 @@ fun PlayerSelectionScreen(
                 }
                 else -> {
                     players.forEach { savedPlayer ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Button(
-                                onClick = {
-                                    onPlayerSelected(
-                                        Player(
-                                            id = savedPlayer.id,
-                                            fullName = savedPlayer.fullName,
-                                            gender = savedPlayer.gender,
-                                            course = savedPlayer.course,
-                                            birthDate = savedPlayer.birthDate,
-                                            zodiac = savedPlayer.zodiac
-                                        )
-                                    )
-                                },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text(
-                                    text = savedPlayer.fullName,
-                                    modifier = Modifier.weight(1f),
-                                    fontSize = 22.sp
-                                )
-                                IconButton(
-                                    onClick = {
-                                        coroutineScope.launch {
-                                            database.deletePlayerCompletely(savedPlayer)
-                                            players = database.playerDao().getAll()
-                                        }
-                                    }
-                                ) {
-                                    Image(
-                                        painter = painterResource(id = R.drawable.delete),
-                                        contentDescription = "Удалить игрока",
-                                        modifier = Modifier.size(24.dp)
-                                    )
+                        PlayerSelectionItem(
+                            savedPlayer = savedPlayer,
+                            database = database,
+                            onPlayerSelected = onPlayerSelected,
+                            onDelete = {
+                                coroutineScope.launch {
+                                    database.deletePlayerCompletely(savedPlayer)
+                                    players = database.playerDao().getAll()
                                 }
                             }
-                        }
+                        )
+
                         Spacer(modifier = Modifier.height(10.dp))
                     }
                 }
@@ -150,6 +124,60 @@ fun PlayerSelectionScreen(
                     text = stringResource(R.string.back_btn),
                     color = Green,
                     fontSize = 22.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PlayerSelectionItem(
+    savedPlayer: PlayerEntity,
+    database: AppDatabase,
+    onPlayerSelected: (Player) -> Unit,
+    onDelete: () -> Unit
+) {
+    val equippedItems by database.shopDao()
+        .observeItems(savedPlayer.id)
+        .collectAsState(initial = emptyList())
+
+    Button(
+        onClick = {
+            onPlayerSelected(
+                Player(
+                    id = savedPlayer.id,
+                    fullName = savedPlayer.fullName,
+                    gender = savedPlayer.gender,
+                    course = savedPlayer.course,
+                    birthDate = savedPlayer.birthDate,
+                    zodiac = savedPlayer.zodiac
+                )
+            )
+        },
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            LadybugAvatar(
+                items = equippedItems.filter { it.isEquipped },
+                modifier = Modifier.size(60.dp)
+            )
+
+            Spacer(modifier = Modifier.width(15.dp))
+
+            Text(
+                text = savedPlayer.fullName,
+                modifier = Modifier.weight(1f),
+                fontSize = 22.sp
+            )
+
+            IconButton(onClick = onDelete) {
+                Image(
+                    painter = painterResource(id = R.drawable.delete),
+                    contentDescription = "Удалить игрока",
+                    modifier = Modifier.size(24.dp)
                 )
             }
         }
